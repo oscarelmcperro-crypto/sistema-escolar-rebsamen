@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Asistencia - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="main-content">
+        <h1>Registrar Asistencia</h1>
+        <p class="subtitle">Selecciona el estado de asistencia para los alumnos el día de hoy</p>
+        
+        <form action="/guardar-asistencia" method="POST">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-alumnos">
+                    </tbody>
+            </table>
+            <br>
+            <button type="submit" class="btn">Guardar Asistencia</button>
+            <a href="/menu" class="btn btn-secondary">Volver al menú</a>
+        </form>
+    </main>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muro de Tareas Académicas - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .header-panel h1 {
+            color: #1e3a8a;
+            margin: 0;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-menu {
+            background: #334155;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .btn-menu:hover { background: #1e293b; }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card h2 {
+            color: #1e3a8a;
+            margin-top: 0;
+            font-size: 1.25rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: #334155;
+            font-size: 0.88rem;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        textarea { height: 80px; resize: vertical; }
+
+        .btn-submit {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 15px;
+        }
+        .btn-submit:hover { background: #15803d; }
+
+        .card-tarea {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+            border-left: 6px solid #1e3a8a;
+        }
+
+        .badge-materia {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-fecha {
+            background: #fef3c7;
+            color: #b45309;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .tarea-titulo {
+            color: #1e3a8a;
+            font-size: 1.2rem;
+            margin: 12px 0 8px 0;
+            font-weight: bold;
+        }
+
+        .tarea-desc {
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .box-entrega-alumno {
+            background: #f0fdf4;
+            border: 1px dashed #16a34a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .box-entregado-exito {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-ver-entregas {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .btn-ver-entregas:hover { background: #7c3aed; }
+
+        .panel-entregas-docente {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .item-entrega {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            margin-bottom: 10px;
+        }
+
+        .link-descarga {
+            color: #16a34a;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .link-descarga:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header-panel">
+        <h1>📚 Muro de Tareas Académicas</h1>
+        <a href="/menu" class="btn-menu">Volver al Menú</a>
+    </div>
+
+    <!-- EXCLUSIVO PARA DOCENTES Y ADMINISTRADORES -->
+    <div class="card" id="card-crear-tarea" style="display: none;">
+        <h2>➕ Publicar Nueva Tarea o Actividad</h2>
+        <form action="/guardar-tarea" method="POST" enctype="multipart/form-data">
+            <div class="form-grid">
+                <div>
+                    <label>Asignatura / Materia:</label>
+                    <input type="text" name="materia" placeholder="Ej: Español, Matemáticas" required>
+                </div>
+                <div>
+                    <label>Título de la Tarea:</label>
+                    <input type="text" name="titulo" placeholder="Ej: Reporte de Lectura" required>
+                </div>
+                <div>
+                    <label>Fecha Límite de Entrega:</label>
+                    <input type="date" name="fecha_entrega" required>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <label>Descripción / Instrucciones:</label>
+                <textarea name="descripcion" placeholder="Escribe las instrucciones de la tarea..." required></textarea>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <label>Adjuntar Archivo Guía (Opcional):</label>
+                <input type="file" name="archivo_adjunto">
+            </div>
+
+            <button type="submit" class="btn-submit">Publicar Tarea 🚀</button>
+        </form>
+    </div>
+
+    <!-- LISTADO DE TAREAS -->
+    <h2 style="color: #1e3a8a; font-size: 1.3rem; margin-bottom: 15px;">📋 Listado de Tareas</h2>
+    <div id="contenedor-tareas">
+        <p style="color: #94a3b8; font-style: italic;">Cargando tareas publicadas...</p>
+    </div>
+
+</div>
+
+<script>
+let esDocenteOAdmin = false;
+
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const resUser = await fetch('/api/usuario-actual');
+        const user = await resUser.json();
+        
+        if (user.logueado) {
+            const rol = (user.rol || '').toLowerCase();
+            esDocenteOAdmin = rol.includes('admin') || rol.includes('docente') || rol.includes('profesor');
+
+            if (esDocenteOAdmin) {
+                document.getElementById('card-crear-tarea').style.display = 'block';
+            }
+        }
+
+        cargarTareas();
+
+    } catch (err) {
+        console.error("Error al iniciar muro de tareas:", err);
+    }
+});
+
+async function cargarTareas() {
+    try {
+        const response = await fetch('/api/lista-tareas');
+        const data = await response.json();
+
+        const contenedor = document.getElementById('contenedor-tareas');
+
+        if (!data.success || !data.tareas || data.tareas.length === 0) {
+            contenedor.innerHTML = `<div class="card"><p style="text-align: center; color: #64748b; margin: 0;">🎉 No hay tareas registradas por el momento.</p></div>`;
+            return;
+        }
+
+        contenedor.innerHTML = data.tareas.map(t => {
+            let htmlEntrega = '';
+
+            if (esDocenteOAdmin) {
+                // SOLO DOCENTE / ADMIN VE EL BOTÓN PARA DESPLEGAR ENTREGAS
+                htmlEntrega = `
+                    <button class="btn-ver-entregas" onclick="toggleEntregas(${t.id})">
+                        👁️ Ver Entregas Recibidas (${t.total_entregas || 0})
+                    </button>
+                    <div id="panel-entregas-${t.id}" class="panel-entregas-docente">
+                        <p style="color: #1e3a8a; font-weight: bold; margin-top: 0;">📬 Archivos Enviados por los Alumnos:</p>
+                        <div id="lista-entregas-${t.id}">Cargando entregas...</div>
+                    </div>
+                `;
+            } else {
+                // EL ALUMNO SOLO VE EL FORMULARIO DE SU PROPIA ENTREGA
+                if (t.ya_entrego) {
+                    htmlEntrega = `
+                        <div class="box-entregado-exito">
+                            ✅ ¡Ya entregaste esta tarea! Tu profesor tiene tu archivo listo para revisar.
+                        </div>
+                    `;
+                } else {
+                    htmlEntrega = `
+                        <div class="box-entrega-alumno">
+                            <form action="/subir-entrega" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="id_tarea" value="${t.id}">
+                                <label style="color: #166534;">📤 Adjuntar y Entregar tu Trabajo:</label>
+                                <input type="file" name="archivo_alumno" required style="margin-bottom: 10px; background: white;">
+                                <input type="text" name="comentario" placeholder="Agregar un comentario breve (Opcional)" style="margin-bottom: 10px;">
+                                <button type="submit" class="btn-submit" style="background: #16a34a; width: 100%; padding: 10px;">
+                                    Enviar Tarea 🚀
+                                </button>
+                            </form>
+                        </div>
+                    `;
+                }
+            }
+
+            return `
+                <div class="card-tarea">
+                    <div>
+                        <span class="badge-materia">📘 ${t.materia}</span>
+                        <span class="badge-fecha">📅 Fecha Límite: ${t.fecha_formateada || t.fecha_entrega}</span>
+                    </div>
+
+                    <div class="tarea-titulo">${t.titulo}</div>
+                    <div class="tarea-desc">${t.descripcion}</div>
+
+                    ${t.archivo_adjunto ? `
+                        <p style="margin-bottom: 15px;">
+                            📎 <strong>Archivo Guía del Docente:</strong> 
+                            <a href="/uploads/${t.archivo_adjunto}" download class="link-descarga">Descargar Guía</a>
+                        </p>
+                    ` : ''}
+
+                    ${htmlEntrega}
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Error al cargar lista de tareas:", err);
+    }
+}
+
+async function toggleEntregas(idTarea) {
+    const panel = document.getElementById(`panel-entregas-${idTarea}`);
+    const contenedorLista = document.getElementById(`lista-entregas-${idTarea}`);
+
+    if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+        return;
+    }
+
+    panel.style.display = 'block';
+    contenedorLista.innerHTML = `<p style="color: #94a3b8;">Cargando entregas de alumnos...</p>`;
+
+    try {
+        const response = await fetch(`/api/ver-entregas/${idTarea}`);
+        const data = await response.json();
+
+        let lista = [];
+        if (Array.isArray(data)) {
+            lista = data;
+        } else if (data.entregas && Array.isArray(data.entregas)) {
+            lista = data.entregas;
+        } else if (data.data && Array.isArray(data.data)) {
+            lista = data.data;
+        }
+
+        if (lista.length === 0) {
+            contenedorLista.innerHTML = `<p style="color: #64748b; font-style: italic;">Ningún alumno ha subido entrega para esta tarea aún.</p>`;
+            return;
+        }
+
+        contenedorLista.innerHTML = lista.map(e => `
+            <div class="item-entrega">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>👤 Alumno: ${e.alumno_nombre || 'Estudiante'} (${e.grupo || 'Sin grupo'})</strong>
+                    <span style="font-size: 0.8rem; color: #64748b;">📅 ${e.fecha_formateada || ''}</span>
+                </div>
+                ${e.comentario ? `<p style="margin: 5px 0; font-size: 0.88rem; color: #475569;">💬 <em>"${e.comentario}"</em></p>` : ''}
+                <a href="/uploads/${e.archivo_alumno}" download class="link-descarga">
+                    💾 Descargar Trabajo (${e.archivo_alumno})
+                </a>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        console.error("Error al cargar entregas:", err);
+        contenedorLista.innerHTML = `<p style="color: #dc2626;">Error al consultar entregas.</p>`;
+    }
+}
+</script>
+
+</body>
+</html>

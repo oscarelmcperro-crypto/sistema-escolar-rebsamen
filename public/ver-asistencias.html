@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Asistencias - Enrique C. Rébsamen</title>
+    <style>
+        body {
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .main-content {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid #1e3a8a;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #ffffff;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        th {
+            background-color: #f8fafc;
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #64748b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #475569;
+        }
+        .badge-asistencia { color: #16a34a; font-weight: bold; }
+        .badge-falta { color: #ef4444; font-weight: bold; }
+        .badge-retardo { color: #d97706; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <main class="main-content">
+        <h1>Historial General de Asistencias</h1>
+        <p class="subtitle">Lista completa de asistencia registrada por fecha</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Grupo</th>
+                    <th>Alumno</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Ejemplo de fila renderizada por el servidor -->
+                <tr>
+                    <td>18/07/2026</td>
+                    <td><strong>3ºA</strong></td>
+                    <td>Pérez, Juan</td>
+                    <td class="badge-asistencia">✔️ Asistencia</td>
+                </tr>
+                <tr>
+                    <td>18/07/2026</td>
+                    <td><strong>3ºA</strong></td>
+                    <td>Gómez, María</td>
+                    <td class="badge-falta">❌ Falta</td>
+                </tr>
+                <tr>
+                    <td>18/07/2026</td>
+                    <td><strong>3ºB</strong></td>
+                    <td>López, Carlos</td>
+                    <td class="badge-retardo">⏳ Retardo</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <a href="/menu" class="btn">Volver al Menú</a>
+    </main>
+</body>
+</html>

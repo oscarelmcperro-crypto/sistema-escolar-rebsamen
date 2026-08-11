@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Ajustes específicos para el Dashboard / Menú */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8fafc;
+        }
+
+        .sidebar-menu {
+            width: 260px;
+            max-height: 100vh;
+            background-color: #1e293b;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar-brand {
+            text-align: center;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand img {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* Scrollbar discreto para la barra lateral */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: #334155;
+            color: #ffffff;
+        }
+
+        .sidebar-link i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 22px 28px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Grid de Tarjetas de Acceso */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.07);
+        }
+
+        .action-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .action-card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .action-card-desc {
+            font-size: 0.84rem;
+            color: #64748b;
+            line-height: 1.4;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+
+        .btn-card {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .info-widget {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            margin-top: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        
+        <!-- SIDEBAR LATERAL COMPLETA -->
+        <aside class="sidebar-menu">
+            <div class="sidebar-brand">
+                <img src="/logo-escuela.png" alt="Logo Escuela" onerror="this.src='https://via.placeholder.com/55'">
+                <h3 style="font-size: 0.9rem; font-weight: 700; color: #ffffff;">Esc. Sec. Ofic. No. 0829</h3>
+                <p style="font-size: 0.75rem; color: #94a3b8;">Enrique C. Rébsamen</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/menu" class="sidebar-link active"><i class="fa-solid fa-house"></i> Inicio</a>
+                <a href="/ver-alumnos" class="sidebar-link"><i class="fa-solid fa-users"></i> Lista de Alumnos</a>
+                <a href="/registrar-asistencia" class="sidebar-link"><i class="fa-solid fa-clipboard-user"></i> Registrar Asistencia</a>
+                <a href="/calificaciones" class="sidebar-link"><i class="fa-solid fa-graduation-cap"></i> Calificaciones</a>
+                <a href="/ver-asistencias" class="sidebar-link"><i class="fa-solid fa-calendar-check"></i> Ver Asistencias</a>
+                
+                <!-- OPCIÓN DEL CALENDARIO -->
+                <a href="/calendario" class="sidebar-link" style="background-color: #0d9488; color: #ffffff; margin: 2px 0;">
+                    <i class="fa-solid fa-calendar-days"></i> Calendario Académico
+                </a>
+
+                <a href="/reporte-grupo-seleccion" class="sidebar-link"><i class="fa-solid fa-chart-pie"></i> Reportes por Grupo</a>
+                
+                <!-- NUEVO: REPORTES AVANZADOS (EXCLUSIVO ADMIN) -->
+                <a href="/reportes-avanzados" class="sidebar-link solo-admin" style="background-color: #3b82f6; color: #ffffff; margin: 2px 0;">
+                    <i class="fa-solid fa-chart-line"></i> Reportes Avanzados
+                </a>
+
+                <a href="/registrar-docente" class="sidebar-link solo-admin"><i class="fa-solid fa-user-tie"></i> Registrar Docentes</a>
+                
+                <a href="/registrar-alumno" class="sidebar-link solo-admin" style="background-color: #2563eb; color: #ffffff; margin: 3px 0;">
+                    <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Alumno
+                </a>
+                
+                <a href="/ver-calificaciones" class="sidebar-link" style="background-color: #2563eb; color: #ffffff; margin-bottom: 3px;">
+                    <i class="fa-solid fa-list-check"></i> Ver Lista de Calificaciones
+                </a>
+
+                <a href="/registrar-bitacora" class="sidebar-link"><i class="fa-solid fa-book"></i> Bitácora Escolar</a>
+                
+                <a href="/reportes-conducta" class="sidebar-link" style="background-color: #dc2626; color: #ffffff; margin: 2px 0;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Conducta y Citatorios
+                </a>
+                <a href="/buzon" class="sidebar-link" style="background-color: #475569; color: #ffffff; margin: 2px 0;">
+                    <i class="fa-solid fa-comments"></i> Buzón / Mensajería
+                </a>
+
+                <!-- REVISIÓN DE JUSTIFICANTES (EXCLUSIVO ADMIN) -->
+                <a href="/revisar-justificantes" class="sidebar-link solo-admin" style="background-color: #0284c7; color: #ffffff; margin: 2px 0;">
+                    <i class="fa-solid fa-file-medical"></i> Revisión de Justificantes
+                </a>
+
+                <a href="/avisos" class="sidebar-link"><i class="fa-solid fa-bullhorn"></i> Muro de Avisos</a>
+                <a href="/promocion" class="sidebar-link solo-admin"><i class="fa-solid fa-user-graduate"></i> Promoción de Grado</a>
+                <a href="/dashboard" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard Estadístico</a>
+                
+                <a href="/portal-padres" class="sidebar-link" style="background-color: #0284c7; color: #ffffff; margin-top: 3px;">
+                    <i class="fa-solid fa-user-group"></i> Portal para Padres
+                </a>
+                
+                <a href="/simular-promedios" class="sidebar-link" style="background-color: #9333ea; color: #ffffff; margin-top: 3px;">
+                    <i class="fa-solid fa-calculator"></i> Simular / Predecir Promedios
+                </a>
+                
+                <a href="/tareas" class="sidebar-link" style="background-color: #2563eb; color: #ffffff; margin-top: 3px; justify-content: space-between;">
+                    <span><i class="fa-solid fa-tasks"></i> Muro de Tareas y Entregas</span>
+                    <span style="background-color: #ef4444; color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">1 pendiente</span>
+                </a>
+            </nav>
+
+            <div style="padding-top: 12px; border-top: 1px solid #334155; margin-top: 10px; flex-shrink: 0;">
+                <a href="/logout" class="sidebar-link" style="color: #ef4444;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-wrapper">
+            
+            <!-- Banner de Bienvenida -->
+            <div class="welcome-banner">
+                <div>
+                    <h1 style="font-size: 1.5rem; font-weight: 700; margin: 0;">👋 ¡Bienvenido, <span id="nombre-usuario">Cargando...</span>!</h1>
+                    <p style="margin-top: 4px; opacity: 0.9; font-size: 0.88rem;">Escuela Secundaria No. 0829 | Rol: <strong id="rol-usuario">Docente</strong></p>
+                </div>
+                <a href="/logout" class="btn" style="background-color: #ef4444; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: bold; text-decoration: none; font-size: 0.9rem;">
+                    <i class="fa-solid fa-power-off"></i> Cerrar Sesión
+                </a>
+            </div>
+
+            <!-- KPIs Superiores -->
+            <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                <div class="kpi-card" style="background: white; padding: 18px; border-radius: 12px; border-left: 5px solid #2563eb; box-shadow: 0 4px 6px rgba(0,0,0,0.03);">
+                    <span class="kpi-title" style="color: #64748b; font-size: 0.78rem; font-weight: bold; text-transform: uppercase;">Alumnos Activos</span>
+                    <span class="kpi-value" id="kpi-alumnos" style="display: block; font-size: 1.7rem; font-weight: bold; color: #1e293b; margin-top: 4px;">7</span>
+                </div>
+                <div class="kpi-card" style="background: white; padding: 18px; border-radius: 12px; border-left: 5px solid #10b981; box-shadow: 0 4px 6px rgba(0,0,0,0.03);">
+                    <span class="kpi-title" style="color: #64748b; font-size: 0.78rem; font-weight: bold; text-transform: uppercase;">Promedio General</span>
+                    <span class="kpi-value" id="kpi-promedio" style="display: block; font-size: 1.7rem; font-weight: bold; color: #1e293b; margin-top: 4px;">7.90</span>
+                </div>
+                <div class="kpi-card" style="background: white; padding: 18px; border-radius: 12px; border-left: 5px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.03);">
+                    <span class="kpi-title" style="color: #64748b; font-size: 0.78rem; font-weight: bold; text-transform: uppercase;">Tareas Publicadas</span>
+                    <span class="kpi-value" id="kpi-tareas" style="display: block; font-size: 1.7rem; font-weight: bold; color: #1e293b; margin-top: 4px;">1</span>
+                </div>
+            </div>
+
+            <!-- Sección de Acciones Frecuentes -->
+            <h2 style="font-size: 1.2rem; font-weight: 700; color: #1e293b; margin-bottom: 12px;">Acciones Frecuentes</h2>
+
+            <div class="actions-grid">
+                
+                <!-- Tarjeta 1 -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">📋</span>
+                            <span class="action-card-title">Asistencia</span>
+                        </div>
+                        <p class="action-card-desc">Toma la asistencia del día de hoy por grupo o escanea credenciales QR.</p>
+                    </div>
+                    <a href="/registrar-asistencia" class="btn-card" style="background-color: #1e3a8a;">Pase de Lista</a>
+                </div>
+
+                <!-- Tarjeta 2 -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">📊</span>
+                            <span class="action-card-title">Calificaciones</span>
+                        </div>
+                        <p class="action-card-desc">Captura parciales, calcula promedios y consulta concentrados por grupo.</p>
+                    </div>
+                    <a href="/calificaciones" class="btn-card" style="background-color: #1e3a8a;">Gestionar Notas</a>
+                </div>
+
+                <!-- TARJETA DEL CALENDARIO -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">📅</span>
+                            <span class="action-card-title">Calendario Académico</span>
+                        </div>
+                        <p class="action-card-desc">Consulta fechas de exámenes, suspensiones de clases, vacaciones y eventos institucionales.</p>
+                    </div>
+                    <a href="/calendario" class="btn-card" style="background-color: #0d9488;">Ver Calendario</a>
+                </div>
+
+                <!-- Tarjeta 3 -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">📚</span>
+                            <span class="action-card-title">Muro de Tareas</span>
+                        </div>
+                        <p class="action-card-desc">Publica actividades para las asignaturas y revisa los trabajos entregados.</p>
+                    </div>
+                    <a href="/tareas" class="btn-card" style="background-color: #1e3a8a;">Ver Tareas</a>
+                </div>
+
+                <!-- Tarjeta 4 -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">📈</span>
+                            <span class="action-card-title">Analítica Escolar</span>
+                        </div>
+                        <p class="action-card-desc">Visualiza estadísticas, gráficas de rendimiento y alertas de riesgo académico.</p>
+                    </div>
+                    <a href="/dashboard" class="btn-card" style="background-color: #2563eb;">Ir al Dashboard</a>
+                </div>
+
+                <!-- NUEVA TARJETA: Conducta y Citatorios -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">🚨</span>
+                            <span class="action-card-title">Conducta y Citatorios</span>
+                        </div>
+                        <p class="action-card-desc">Registra incidencias disciplinarias y genera citatorios oficiales en PDF para tutores.</p>
+                    </div>
+                    <a href="/reportes-conducta" class="btn-card" style="background-color: #dc2626;">Gestionar Reportes</a>
+                </div>
+
+                <!-- NUEVA TARJETA: Buzón Escolar -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">💬</span>
+                            <span class="action-card-title">Buzón Escolar</span>
+                        </div>
+                        <p class="action-card-desc">Consulta y publica comunicados internos o mensajes directos para la comunidad.</p>
+                    </div>
+                    <a href="/buzon" class="btn-card" style="background-color: #475569;">Ver Buzón</a>
+                </div>
+
+                <!-- Tarjeta 5 -->
+                <div class="action-card solo-admin">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">👨‍🏫</span>
+                            <span class="action-card-title">Gestión de Docentes</span>
+                        </div>
+                        <p class="action-card-desc">Módulo exclusivo para dar de alta cuentas de profesores en la plataforma.</p>
+                    </div>
+                    <a href="/registrar-docente" class="btn-card" style="background-color: #7c3aed;">Registrar Docente</a>
+                </div>
+
+                <!-- Tarjeta 6 -->
+                <div class="action-card">
+                    <div>
+                        <div class="action-card-header">
+                            <span style="font-size: 1.2rem;">📢</span>
+                            <span class="action-card-title">Muro de Avisos</span>
+                        </div>
+                        <p class="action-card-desc">Publica comunicados oficiales y circulares para toda la comunidad escolar.</p>
+                    </div>
+                    <a href="/avisos" class="btn-card" style="background-color: #d97706;">Publicar Aviso</a>
+                </div>
+
+            </div>
+
+            <!-- Mini-Widget Informativo de Estado de Sistema -->
+            <div class="info-widget">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 1.4rem;"></i>
+                    <div>
+                        <h4 style="margin: 0; font-size: 0.95rem; color: #1e293b;">Sistema de Control Escolar Operativo</h4>
+                        <p style="margin: 0; font-size: 0.82rem; color: #64748b;">Base de datos en PostgreSQL sincronizada correctamente.</p>
+                    </div>
+                </div>
+                <a href="/ver-alumnos" style="font-size: 0.85rem; color: #2563eb; font-weight: 600; text-decoration: none;">Ir al Alumnos →</a>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SCRIPT DE ADAPTACIÓN AUTOMÁTICA SEGÚN EL USUARIO -->
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                // Consultar la API del backend para saber quién está logueado
+                const res = await fetch('/api/usuario-actual');
+                const user = await res.json();
+
+                if (user.logueado) {
+                    // Actualizar el banner superior
+                    document.getElementById('nombre-usuario').textContent = user.username || 'Usuario';
+                    document.getElementById('rol-usuario').textContent = user.rol || 'Docente';
+
+                    // Verificar si es Administrador/Director
+                    const rol = (user.rol || '').toLowerCase();
+                    const esAdmin = rol.includes('admin') || rol.includes('director') || rol === 'administrador';
+
+                    // Si NO es administrador, ocultar los módulos restringidos
+                    if (!esAdmin) {
+                        const elementosAdmin = document.querySelectorAll('.solo-admin');
+                        elementosAdmin.forEach(el => el.style.display = 'none');
+                    }
+                }
+            } catch (err) {
+                console.error("Error al obtener información del usuario:", err);
+            }
+        });
+    </script>
+<script src="/dark-mode.js"></script>
+</body>
+</html>

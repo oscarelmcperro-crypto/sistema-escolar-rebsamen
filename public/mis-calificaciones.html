@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Académico del Alumno - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .portal-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ENCABEZADO Y BARRA DE BOTONES */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .top-bar h1 {
+            color: #1e3a8a;
+            font-size: 1.6rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.88rem;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-green { background-color: #16a34a; color: white; }
+        .btn-slate { background-color: #475569; color: white; }
+        .btn-red { background-color: #ef4444; color: white; }
+        .btn-cyan { background-color: #0284c7; color: white; }
+        .btn:hover { opacity: 0.9; }
+
+        /* TARJETAS CONTENEDORAS */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* MEMBRETE BOLETA */
+        .header-boleta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header-boleta img { height: 65px; width: auto; }
+        .header-boleta h2 { margin: 0; color: #1e3a8a; font-size: 1.4rem; text-align: center; }
+        .header-boleta p { margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem; text-align: center; }
+
+        .alumno-banner {
+            background: #f1f5f9;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        /* TABLAS */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.92rem;
+            color: #334155;
+        }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: bold; }
+
+        /* INPUT META FINAL */
+        .input-meta {
+            width: 65px;
+            padding: 6px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        /* BADGES */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef9c3; color: #a16207; }
+        .badge-danger { background: #fee2e2; color: #b91c1c; }
+
+        /* WIDGETS INFERIORES */
+        .grid-two-cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* FORMULARIO JUSTIFICANTE */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #334155;
+            margin-bottom: 5px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="portal-container">
+
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar">
+        <h1>🎓 Portal Académico del Alumno</h1>
+        <div class="btn-group">
+            <a href="/tareas" class="btn btn-cyan">📚 Muro de Tareas</a>
+            <a href="/menu" class="btn btn-slate">Volver al Menú</a>
+            <a href="/logout" class="btn btn-red">Cerrar Sesión</a>
+            <a href="/mi-credencial" class="btn" style="background-color: #0284c7; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">📇 Mi Credencial</a>
+        </div>
+    </div>
+
+    <!-- TARJETA 1: BOLETA OFICIAL -->
+    <div class="card">
+        <div class="header-boleta">
+            <img src="/logo-escuela.png" alt="Escudo" onerror="this.src='/LOGO UPEM.jpg'">
+            <div>
+                <h2>Boleta Oficial de Calificaciones</h2>
+                <p>Escuela Secundaria Oficial No. 0829 "Enrique C. Rébsamen"</p>
+            </div>
+            <div style="width: 65px;"></div>
+        </div>
+
+        <div class="alumno-banner">
+            👤 Alumno: <span id="nombre-alumno">Cargando...</span>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Asignatura / Materia</th>
+                    <th class="text-center">Parcial 1</th>
+                    <th class="text-center">Parcial 2</th>
+                    <th class="text-center">Parcial 3</th>
+                    <th class="text-center">Promedio Final</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-notas">
+                <tr><td colspan="5" class="text-center" style="color: #94a3b8;">Cargando calificaciones...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TARJETA 2: SIMULADOR DE PROMEDIOS EN TIEMPO REAL -->
+    <div class="card">
+        <h2 style="color: #1e3a8a; margin-top: 0; font-size: 1.25rem;">🧮 Simulación y Predicción de Promedios</h2>
+        <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">Modifica el valor en <strong>Meta Final</strong> para calcular en tiempo real cuánto necesitas sacar en el <strong>Parcial 3</strong> para lograr esa calificación.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Asignatura</th>
+                    <th class="text-center">Parcial 1</th>
+                    <th class="text-center">Parcial 2</th>
+                    <th class="text-center">Meta Final</th>
+                    <th class="text-center">Necesitas en P3 🔮</th>
+                    <th class="text-center">Estatus</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-simulador">
+                <tr><td colspan="6" class="text-center" style="color: #94a3b8;">Cargando simulador...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓN INFERIOR: RESUMEN DE ASISTENCIA Y BITÁCORA -->
+    <div class="grid-two-cols">
+        
+        <!-- RESUMEN ASISTENCIA -->
+        <div class="card" style="margin-bottom: 0;">
+            <h3 style="color: #1e3a8a; margin-top: 0;">⏰ Resumen de Asistencias</h3>
+            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #16a34a;">
+                    <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;">Asistencias</span>
+                    <p id="asist-si" style="margin: 4px 0 0 0; font-size: 1.3rem; font-weight: bold;">0</p>
+                </div>
+                <div style="flex: 1; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                    <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;">Faltas</span>
+                    <p id="asist-no" style="margin: 4px 0 0 0; font-size: 1.3rem; font-weight: bold; color: #dc2626;">0</p>
+                </div>
+                <div style="flex: 1; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #eab308;">
+                    <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;">Retardos</span>
+                    <p id="asist-ret" style="margin: 4px 0 0 0; font-size: 1.3rem; font-weight: bold;">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BITÁCORA ESCOLAR -->
+        <div class="card" style="margin-bottom: 0;">
+            <h3 style="color: #1e3a8a; margin-top: 0;">📝 Observaciones y Bitácora</h3>
+            <div id="contenedor-bitacora" style="margin-top: 10px;">
+                <p style="color: #94a3b8; font-size: 0.9rem; font-style: italic;">Sin reportes ni observaciones registradas.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SECCIÓN NUEVA: SUBIR JUSTIFICANTE MÉDICO -->
+    <div class="card" style="margin-top: 25px;">
+        <h3 style="color: #1e3a8a; margin-top: 0;"><i class="fa-solid fa-file-medical"></i> Enviar Justificante Médico o de Ausencia</h3>
+        <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">Sube el comprobante en formato digital (Imagen o PDF) para que la Dirección Escolar lo revise y valide.</p>
+        
+        <form action="/subir-justificante" method="POST" enctype="multipart/form-data">
+            <input type="hidden" id="input-id-alumno" name="id_alumno" value="">
+            
+            <div class="grid-two-cols" style="margin-bottom: 0;">
+                <div class="form-group">
+                    <label>Fecha de la Inasistencia:</label>
+                    <input type="date" name="fecha_falta" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Documento Adjunto (PDF o Imagen):</label>
+                    <input type="file" name="archivo_justificante" class="form-control" accept=".pdf,image/*" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Motivo o Descripción:</label>
+                <textarea name="motivo" rows="2" class="form-control" placeholder="Escribe el motivo breve de la ausencia..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn" style="background-color: #16a34a; color: white; width: 100%; margin-top: 10px;">
+                <i class="fa-solid fa-upload"></i> Enviar Justificante a Dirección
+            </button>
+        </form>
+    </div>
+
+</div>
+
+<!-- WIDGET FLOTANTE DE ASISTENTE DE IA (ROBOTCITO) -->
+<div id="chat-widget-container" style="position: fixed; bottom: 25px; right: 25px; z-index: 9999; font-family: 'Segoe UI', sans-serif;">
+    <!-- Botón flotante para abrir chat -->
+    <button id="chat-toggle-btn" onclick="toggleChat()" style="background: #1e3a8a; color: white; border: none; width: 55px; height: 55px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform 0.2s;">
+        🤖
+    </button>
+
+    <!-- Ventana de Chat -->
+    <div id="chat-window" style="display: none; width: 340px; height: 460px; background: white; border-radius: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); border: 1px solid #cbd5e1; flex-direction: column; overflow: hidden; position: absolute; bottom: 70px; right: 0;">
+        <!-- Cabecera -->
+        <div style="background: #1e3a8a; color: white; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.2rem;">🤖</span>
+                <div>
+                    <h4 style="margin: 0; font-size: 0.95rem;">Asistente Rébsamen</h4>
+                    <span style="font-size: 0.7rem; opacity: 0.8;">En línea | Consultas en tiempo real</span>
+                </div>
+            </div>
+            <button onclick="toggleChat()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">✕</button>
+        </div>
+
+        <!-- Cuerpo de mensajes -->
+        <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem;">
+            <div style="background: #e2e8f0; padding: 10px 12px; border-radius: 10px; max-width: 85%; align-self: flex-start; color: #1e293b;">
+                ¡Hola! 👋 Soy tu asistente escolar. Pregúntame por tus calificaciones, asistencias o tareas pendientes.
+            </div>
+        </div>
+
+        <!-- Input de texto -->
+        <div style="padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 8px;">
+            <input type="text" id="chat-input" placeholder="Escribe tu pregunta aquí..." onkeypress="if(event.key === 'Enter') enviarMensajeChat()" style="flex: 1; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none;">
+            <button onclick="enviarMensajeChat()" style="background: #1e3a8a; color: white; border: none; padding: 9px 14px; border-radius: 8px; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const response = await fetch('/api/mis-notas');
+        const data = await response.json();
+
+        if (data.success && data.calificaciones) {
+            document.getElementById('nombre-alumno').textContent = data.nombreAlumno || "Alumno SDC";
+            
+            renderBoleta(data.calificaciones);
+            renderSimulador(data.calificaciones);
+            cargarDatosAdicionales();
+        }
+    } catch (err) {
+        console.error("Error al cargar datos del alumno:", err);
+    }
+});
+
+async function cargarDatosAdicionales() {
+    try {
+        const res = await fetch('/api/datos-credencial');
+        const data = await res.json();
+        if(data.success && data.alumno) {
+            const idAlumno = data.alumno.id;
+            
+            // Asignar el ID al input oculto del formulario de justificantes
+            document.getElementById('input-id-alumno').value = idAlumno;
+            
+            // Consultar resumen de asistencia y bitácora del alumno logueado
+            const resPortal = await fetch(`/api/consultar-alumno/${idAlumno}`);
+            const portalData = await resPortal.json();
+            
+            if(portalData.success) {
+                // Rellenar asistencias
+                document.getElementById('asist-si').textContent = portalData.asistencia.Asistencia || 0;
+                document.getElementById('asist-no').textContent = portalData.asistencia.Falta || 0;
+                document.getElementById('asist-ret').textContent = portalData.asistencia.Retardo || 0;
+
+                // Rellenar bitácora
+                const contenedorBitacora = document.getElementById('contenedor-bitacora');
+                if(portalData.bitacora && portalData.bitacora.length > 0) {
+                    contenedorBitacora.innerHTML = portalData.bitacora.map(b => `
+                        <div style="background: #f8fafc; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; border-left: 3px solid ${b.tipo === 'Reporte' ? '#ef4444' : (b.tipo === 'Felicitación' ? '#16a34a' : '#eab308')}; font-size: 0.85rem;">
+                            <strong>[${b.tipo}]</strong> ${b.descripcion} <br><small style="color:#64748b;">${new Date(b.fecha).toLocaleDateString('es-MX')}</small>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+    } catch(e) {
+        console.error("Error cargando asistencias y bitácora:", e);
+    }
+}
+
+function renderBoleta(notas) {
+    const tbody = document.getElementById('tabla-notas');
+    if (notas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center">No se encontraron calificaciones.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = notas.map(n => `
+        <tr>
+            <td class="font-bold">${n.materia}</td>
+            <td class="text-center">${n.parcial1 || '-'}</td>
+            <td class="text-center">${n.parcial2 || '-'}</td>
+            <td class="text-center">${n.parcial3 || '-'}</td>
+            <td class="text-center font-bold" style="color: ${n.calificacion >= 6 ? '#16a34a' : '#dc2626'}">
+                ${n.calificacion || '0.00'}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderSimulador(notas) {
+    const tbody = document.getElementById('tabla-simulador');
+    
+    tbody.innerHTML = notas.map((n, index) => {
+        const p1 = parseFloat(n.parcial1) || 0;
+        const p2 = parseFloat(n.parcial2) || 0;
+        const metaInicial = 8.0;
+
+        return `
+            <tr>
+                <td class="font-bold">${n.materia}</td>
+                <td class="text-center">${p1.toFixed(2)}</td>
+                <td class="text-center">${p2.toFixed(2)}</td>
+                <td class="text-center">
+                    <input type="number" class="input-meta" id="meta-${index}" value="${metaInicial}" step="0.5" min="6" max="10" 
+                           oninput="calcularP3(${index}, ${p1},${p2})">
+                </td>
+                <td class="text-center font-bold" id="resultado-${index}" style="font-size: 1.05rem;">
+                    --
+                </td>
+                <td class="text-center" id="estatus-${index}">
+                    --
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    notas.forEach((n, index) => {
+        calcularP3(index, parseFloat(n.parcial1) || 0, parseFloat(n.parcial2) || 0);
+    });
+}
+
+function calcularP3(index, p1, p2) {
+    const inputMeta = document.getElementById(`meta-${index}`);
+    const resCell = document.getElementById(`resultado-${index}`);
+    const estatusCell = document.getElementById(`estatus-${index}`);
+
+    let meta = parseFloat(inputMeta.value);
+    if (isNaN(meta)) meta = 0;
+
+    let p3Necesario = (meta * 3) - (p1 + p2);
+
+    if (p3Necesario <= 0) {
+        resCell.textContent = "0.00";
+        resCell.style.color = "#16a34a";
+        estatusCell.innerHTML = `<span class="badge badge-success">🎉 ¡Aprobado!</span>`;
+    } else if (p3Necesario <= 10.0) {
+        resCell.textContent = p3Necesario.toFixed(2);
+        resCell.style.color = "#2563eb";
+        estatusCell.innerHTML = `<span class="badge badge-warning">⚡ Alcanzable</span>`;
+    } else {
+        resCell.textContent = p3Necesario.toFixed(2);
+        resCell.style.color = "#dc2626";
+        estatusCell.innerHTML = `<span class="badge badge-danger">Inalcanzable (>10) ⚠️</span>`;
+    }
+}
+
+// Funciones del Chatbot Asistente
+function toggleChat() {
+    const ventana = document.getElementById('chat-window');
+    ventana.style.display = ventana.style.display === 'flex' ? 'none' : 'flex';
+}
+
+async function enviarMensajeChat() {
+    const input = document.getElementById('chat-input');
+    const mensaje = input.value.trim();
+    if (!mensaje) return;
+
+    const contenedorMensajes = document.getElementById('chat-messages');
+
+    contenedorMensajes.innerHTML += `<div style="background: #2563eb; color: white; padding: 10px 12px; border-radius: 10px; max-width: 85%; align-self: flex-end;">${mensaje}</div>`;
+    input.value = '';
+    contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+
+    try {
+        const res = await fetch('/api/chatbot-escolar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensaje })
+        });
+        const data = await res.json();
+
+        contenedorMensajes.innerHTML += `<div style="background: #e2e8f0; padding: 10px 12px; border-radius: 10px; max-width: 85%; align-self: flex-start; color: #1e293b; line-height: 1.4;">${data.respuesta}</div>`;
+        contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+    } catch (e) {
+        contenedorMensajes.innerHTML += `<div style="background: #fee2e2; color: #b91c1c; padding: 10px 12px; border-radius: 10px; max-width: 85%; align-self: flex-start;">Error de conexión con el asistente.</div>`;
+    }
+}
+</script>
+
+</body>
+</html>

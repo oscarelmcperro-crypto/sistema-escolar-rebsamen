@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzón y Mensajería Interna - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 25px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .header-panel h1 { color: #1e3a8a; margin: 0; font-size: 1.8rem; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; color: #334155; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        .btn { background: #1e3a8a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn:hover { background: #1d4ed8; }
+        .msg-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 12px; }
+        .msg-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-panel">
+            <h1>💬 Buzón y Mensajería Escolar</h1>
+            <a href="/menu" class="btn" style="background:#64748b; text-decoration:none;">Volver al Menú</a>
+        </div>
+
+        <div class="card">
+            <h3 style="color:#1e3a8a; margin-top:0;">Enviar Nuevo Comunicado</h3>
+            <form action="/enviar-mensaje" method="POST">
+                <div class="form-group">
+                    <label>Asunto:</label>
+                    <input type="text" name="asunto" required placeholder="Ej. Aviso importante sobre junta...">
+                </div>
+                <div class="form-group">
+                    <label>Contenido del Mensaje:</label>
+                    <textarea name="contenido" rows="3" required placeholder="Escribe el mensaje aquí..."></textarea>
+                </div>
+                <button type="submit" class="btn">Publicar Mensaje 🚀</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3 style="color:#1e3a8a; margin-top:0;">Historial de Comunicados</h3>
+            <div id="listaMensajes">Cargando mensajes...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const res = await fetch('/api/mensajes');
+                const mensajes = await res.json();
+                const contenedor = document.getElementById('listaMensajes');
+                contenedor.innerHTML = '';
+
+                if (mensajes.length === 0) {
+                    contenedor.innerHTML = '<p style="color:#94a3b8; text-align:center; padding:15px;">No hay mensajes en el buzón.</p>';
+                    return;
+                }
+
+                mensajes.forEach(m => {
+                    const fechaFmt = new Date(m.fecha).toLocaleString('es-MX');
+                    contenedor.innerHTML += `
+                        <div class="msg-item">
+                            <div class="msg-header">
+                                <span>De: <strong>${m.remitente}</strong></span>
+                                <span>${fechaFmt}</span>
+                            </div>
+                            <h4 style="margin: 0 0 5px 0; color: #1e3a8a;">${m.asunto}</h4>
+                            <p style="margin: 0; color: #334155; font-size: 0.95rem;">${m.contenido}</p>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.error("Error cargando mensajes:", e);
+            }
+        });
+    </script>
+</body>
+</html>

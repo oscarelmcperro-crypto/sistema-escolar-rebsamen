@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mi Credencial Digital - Enrique C. Rébsamen</title>
+    <style>
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .volver-btn { align-self: flex-start; margin-bottom: 20px; color: #64748b; text-decoration: none; font-weight: bold; font-size: 0.95rem; }
+        
+        .credencial-card { background: white; width: 100%; max-width: 340px; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #1e3a8a; position: relative; }
+        
+        .credencial-header { background: #1e3a8a; color: white; text-align: center; padding: 25px 20px; }
+        .credencial-header h2 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .credencial-header p { margin: 5px 0 0 0; font-size: 0.85rem; color: #93c5fd; }
+        
+        .foto-container { width: 100px; height: 100px; background: #e2e8f0; border-radius: 50%; margin: -50px auto 15px auto; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        .credencial-body { padding: 0 25px 25px 25px; text-align: center; }
+        .alumno-nombre { font-size: 1.4rem; font-weight: 800; color: #1e293b; margin: 0 0 5px 0; text-transform: capitalize; line-height: 1.2; }
+        .alumno-grupo { display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-bottom: 15px; }
+        .alumno-id { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-bottom: 20px; }
+        
+        .qr-container { background: white; padding: 10px; border-radius: 12px; border: 2px dashed #cbd5e1; display: inline-block; margin-bottom: 15px; }
+        .qr-container img { width: 160px; height: 160px; display: block; }
+        
+        .credencial-footer { background: #f8fafc; text-align: center; padding: 15px; font-size: 0.75rem; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+
+    <div style="width: 100%; max-width: 340px;">
+        <a href="/mis-calificaciones" class="volver-btn">← Volver a mi boleta</a>
+    </div>
+
+    <div class="credencial-card" id="tarjetaCredencial" style="display: none;">
+        <div class="credencial-header">
+            <h2>Secundaria Oficial No. 0829</h2>
+            <p>"Enrique C. Rébsamen"</p>
+        </div>
+        
+        <div class="credencial-body">
+            <div class="foto-container">👤</div>
+            <h1 class="alumno-nombre" id="nomAlumno">Cargando...</h1>
+            <div class="alumno-grupo" id="grupAlumno">Grupo --</div>
+            <div class="alumno-id" id="idAlumnoTxt">ID: --</div>
+            
+            <p style="font-size: 0.8rem; color: #475569; margin-bottom: 10px;">Escanea este código en la entrada:</p>
+            <div class="qr-container">
+                <img id="qrImage" src="" alt="Código QR del Alumno">
+            </div>
+        </div>
+        
+        <div class="credencial-footer">
+            Documento de Identificación Digital<br>Ciclo Escolar Vigente - Estado de México
+        </div>
+    </div>
+
+    <p id="mensajeError" style="color: #ef4444; font-weight: bold; display: none; text-align: center; margin-top: 20px;"></p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/datos-credencial');
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('nomAlumno').textContent = `${data.alumno.apellido}, ${data.alumno.nombre}`.toLowerCase();
+                    document.getElementById('grupAlumno').textContent = `Grupo: ${data.alumno.grupo.replace(/"/g, '')}`;
+                    document.getElementById('idAlumnoTxt').textContent = `Matrícula / ID: ${data.alumno.id}`;
+                    document.getElementById('qrImage').src = data.qrImage;
+                    
+                    document.getElementById('tarjetaCredencial').style.display = 'block';
+                } else {
+                    document.getElementById('mensajeError').textContent = data.message || "No se pudo cargar la credencial.";
+                    document.getElementById('mensajeError').style.display = 'block';
+                }
+            } catch (err) {
+                console.error("Error cargando la credencial digital:", err);
+                document.getElementById('mensajeError').textContent = "Error de conexión con el servidor.";
+                document.getElementById('mensajeError').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Cuenta - Sistema Escolar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+    <main class="login-container">
+        <section class="login-card">
+            <header class="login-header">
+                <h2>Verifica tu Identidad</h2>
+                <p>Ingresa tus datos registrados para enviarte un código de verificación por correo electrónico</p>
+            </header>
+
+            <form action="/enviar-codigo" method="POST" class="login-form">
+                <div class="form-group">
+                    <label>Nombre de Usuario:</label>
+                    <input type="text" name="username" placeholder="Tu usuario" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico Registrado:</label>
+                    <input type="email" name="email" placeholder="ejemplo@correo.com" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Enviar Código de Verificación</button>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="/" style="color: #7f8c8d; font-size: 0.9rem; text-decoration: none;">Volver al inicio</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

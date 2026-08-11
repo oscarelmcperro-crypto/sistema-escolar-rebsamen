@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualización Obligatoria - Sistema Escolar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+    <main class="login-container">
+        <section class="login-card">
+            <header class="login-header">
+                <h2>Actualiza tu Contraseña</h2>
+                <p>Por seguridad, al ser tu primer inicio de sesión, debes cambiar la contraseña provisional que te asignó el administrador por una personal.</p>
+            </header>
+
+            <form action="/cambio-obligatorio" method="POST" class="login-form">
+                <div class="form-group">
+                    <label>Nueva Contraseña Personal:</label>
+                    <input type="password" name="nuevaPassword" placeholder="Escribe tu nueva contraseña" required minlength="4">
+                </div>
+                <button type="submit" class="btn-submit">Confirmar y Entrar al Sistema</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

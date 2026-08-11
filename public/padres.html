@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal para Padres - Enrique C. Rébsamen</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; padding: 25px; color: #1e293b; display: block !important; min-height: 100vh; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .search-card { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 25px; border: 1px solid #e2e8f0; text-align: center; }
+        .search-card h1 { color: #1e3a8a; margin-bottom: 10px; font-size: 1.6rem; }
+        .search-box { display: flex; gap: 10px; max-width: 480px; margin: 20px auto 0 auto; flex-wrap: wrap; justify-content: center; }
+        .search-box input, .search-box select { flex: 1; min-width: 200px; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; outline: none; background: white; }
+        .search-box button { background: #1e3a8a; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .search-box button:hover { background: #1d4ed8; }
+        .btn-top-menu { display: inline-block; margin-top: 15px; color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+        .results { display: none; }
+        .info-card { background: #ffffff; padding: 22px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); text-align: left; position: relative; }
+        .info-card h2 { color: #1e3a8a; font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .badges-grid { display: flex; gap: 15px; flex-wrap: wrap; }
+        .badge { padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; }
+        .badge-green { background: #dcfce7; color: #15803d; }
+        .badge-red { background: #fee2e2; color: #b91c1c; }
+        .badge-yellow { background: #fef9c3; color: #a16207; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+        th { background: #1e3a8a; color: white; font-weight: 600; }
+        th:first-child, td:first-child { text-align: left; }
+        td:first-child { font-weight: 600; color: #334155; }
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; color: #475569; font-size: 0.85rem; }
+        .tab-btn.active { background: #1e3a8a; color: white; }
+        
+        /* Estilos del Modal Justificante */
+        .btn-justificante { background: #0284c7; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .justificante-form { display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 15px; }
+        .justificante-form label { font-weight: bold; font-size: 0.85rem; color: #334155; display: block; margin-bottom: 5px; margin-top: 10px; }
+        .justificante-form input[type="date"], .justificante-form input[type="text"], .justificante-form input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; }
+        .btn-submit-just { background: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- BUSCADOR -->
+        <div class="search-card">
+            <h1>👨‍👩‍👧 Consulta Escolar para Padres de Familia</h1>
+            <p style="color: #64748b; margin-bottom: 15px;">Seleccione el alumno o ingrese su matrícula para consultar su expediente:</p>
+            
+            <div class="tabs">
+                <button type="button" class="tab-btn active" onclick="cambiarModo('select')">📋 Seleccionar de la Lista</button>
+                <button type="button" class="tab-btn" onclick="cambiarModo('input')">⌨️ Escribir Matrícula / ID</button>
+            </div>
+
+            <div class="search-box">
+                <!-- Modo Selector -->
+                <div id="modoSelect" style="display: flex; gap: 10px; width: 100%; justify-content: center;">
+                    <select id="selectAlumno">
+                        <option value="">-- Cargando lista de alumnos --</option>
+                    </select>
+                    <button onclick="buscarPorSelect()">Ver Expediente 🔍</button>
+                </div>
+
+                <!-- Modo Input Manual -->
+                <div id="modoInput" style="display: none; gap: 10px; width: 100%; justify-content: center;">
+                    <input type="number" id="idAlumno" placeholder="Ej. 8" min="1">
+                    <button onclick="buscarPorInput()">Buscar 🔍</button>
+                </div>
+            </div>
+
+            <p id="mensajeError" style="color: #ef4444; margin-top: 15px; font-weight: bold; display: none;"></p>
+            <div>
+                <a href="/menu" class="btn-top-menu">← Volver al Menú Principal</a>
+            </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="resultados" class="results">
+            <div class="info-card">
+                <h2>👤 Datos del Alumno</h2>
+                <p style="font-size: 1.05rem; margin-bottom: 5px;"><strong>Nombre Completo:</strong> <span id="nombreAlumno"></span></p>
+                <p style="font-size: 1.05rem;"><strong>Grado y Grupo:</strong> <span id="grupoAlumno" style="color:#1e3a8a; font-weight:bold;"></span></p>
+                
+                <!-- NUEVO: Formulario Oculto de Justificante -->
+                <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <button class="btn-justificante" onclick="toggleJustificante()">+ Enviar Justificante Médico</button>
+                    
+                    <form id="formJustificante" class="justificante-form" action="/subir-justificante" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="id_alumno" id="justificanteIdAlumno">
+                        
+                        <label>Fecha de la inasistencia:</label>
+                        <input type="date" name="fecha_falta" required>
+                        
+                        <label>Motivo breve:</label>
+                        <input type="text" name="motivo" placeholder="Ej. Cita médica, enfermedad..." required>
+                        
+                        <label>Adjuntar Receta o Documento (PDF o Foto):</label>
+                        <input type="file" name="archivo_justificante" accept=".pdf, image/*" required>
+                        
+                        <button type="submit" class="btn-submit-just">Enviar a Dirección</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h2>📊 Resumen de Asistencia</h2>
+                <div class="badges-grid">
+                    <span class="badge badge-green">✔️ Asistencias: <strong id="asistOK">0</strong></span>
+                    <span class="badge badge-red">❌ Faltas: <strong id="asistFaltas">0</strong></span>
+                    <span class="badge badge-yellow">⏳ Retardos: <strong id="asistRetardos">0</strong></span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h2>📝 Boleta de Calificaciones</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Asignatura</th>
+                            <th>Parcial 1</th>
+                            <th>Parcial 2</th>
+                            <th>Parcial 3</th>
+                            <th>Promedio Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCalificaciones"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let alumnoSeleccionadoID = null;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const res = await fetch('/api/lista-alumnos');
+                const alumnos = await res.json();
+                const select = document.getElementById('selectAlumno');
+                select.innerHTML = '<option value="">-- Seleccione un alumno --</option>';
+                
+                alumnos.forEach(a => {
+                    const grupoLimpio = a.grupo ? a.grupo.replace(/"/g, '').trim() : 'Sin Grupo';
+                    const option = document.createElement('option');
+                    option.value = a.id;
+                    option.textContent = `[${grupoLimpio}] ${a.apellido}, ${a.nombre}`;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.error("Error al cargar lista de alumnos para padres:", e);
+            }
+        });
+
+        function cambiarModo(modo) {
+            const btnSelect = document.querySelectorAll('.tab-btn')[0];
+            const btnInput = document.querySelectorAll('.tab-btn')[1];
+            const divSelect = document.getElementById('modoSelect');
+            const divInput = document.getElementById('modoInput');
+            
+            document.getElementById('mensajeError').style.display = 'none';
+
+            if (modo === 'select') {
+                btnSelect.classList.add('active');
+                btnInput.classList.remove('active');
+                divSelect.style.display = 'flex';
+                divInput.style.display = 'none';
+            } else {
+                btnInput.classList.add('active');
+                btnSelect.classList.remove('active');
+                divInput.style.display = 'flex';
+                divSelect.style.display = 'none';
+            }
+        }
+
+        function toggleJustificante() {
+            const form = document.getElementById('formJustificante');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+            document.getElementById('justificanteIdAlumno').value = alumnoSeleccionadoID;
+        }
+
+        function buscarPorSelect() {
+            const id = document.getElementById('selectAlumno').value;
+            if (!id) {
+                mostrarError('Por favor, seleccione un alumno de la lista.');
+                return;
+            }
+            ejecutarBusqueda(id);
+        }
+
+        function buscarPorInput() {
+            const id = document.getElementById('idAlumno').value.trim();
+            if (!id) {
+                mostrarError('Por favor, ingrese un número de ID válido.');
+                return;
+            }
+            ejecutarBusqueda(id);
+        }
+
+        function mostrarError(msj) {
+            const err = document.getElementById('mensajeError');
+            err.textContent = msj;
+            err.style.display = 'block';
+            document.getElementById('resultados').style.display = 'none';
+        }
+
+        function formatearNombre(str) {
+            if (!str) return '';
+            return str
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function formatearGrupo(str) {
+            if (!str) return '';
+            return str.replace(/"/g, '').trim();
+        }
+
+        async function ejecutarBusqueda(id) {
+            const err = document.getElementById('mensajeError');
+            const resDiv = document.getElementById('resultados');
+            
+            err.style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/consultar-alumno/${id}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    mostrarError(data.message || 'Alumno no encontrado.');
+                    return;
+                }
+
+                // Guardar el ID de forma global para el formulario de justificantes
+                alumnoSeleccionadoID = data.alumno.id;
+
+                document.getElementById('nombreAlumno').textContent = formatearNombre(`${data.alumno.nombre} ${data.alumno.apellido}`);
+                document.getElementById('grupoAlumno').textContent = formatearGrupo(data.alumno.grupo);
+
+                document.getElementById('asistOK').textContent = data.asistencia.Asistencia || 0;
+                document.getElementById('asistFaltas').textContent = data.asistencia.Falta || 0;
+                document.getElementById('asistRetardos').textContent = data.asistencia.Retardo || 0;
+
+                const tbody = document.getElementById('tablaCalificaciones');
+                tbody.innerHTML = '';
+
+                if (data.calificaciones.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:15px;">No hay calificaciones registradas para este alumno.</td></tr>';
+                } else {
+                    data.calificaciones.forEach(c => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${c.materia}</td>
+                                <td>${c.parcial1 !== null ? c.parcial1 : '-'}</td>
+                                <td>${c.parcial2 !== null ? c.parcial2 : '-'}</td>
+                                <td>${c.parcial3 !== null ? c.parcial3 : '-'}</td>
+                                <td><strong style="color: #1e3a8a;">${c.calificacion || '0.00'}</strong></td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // Ocultar formulario de justificante cada vez que se busca un nuevo alumno
+                document.getElementById('formJustificante').style.display = 'none';
+                resDiv.style.display = 'block';
+
+            } catch (e) {
+                mostrarError('Ocurrió un error al conectar con el servidor.');
+            }
+        }
+
+        document.getElementById('idAlumno').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') buscarPorInput();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Escáner QR - Asistencia Rápida</title>
+    <!-- Librería para lectura de QR desde la cámara -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
+        .scanner-card { background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); width: 100%; max-width: 480px; text-align: center; border: 1px solid #334155; }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 15px; background: #0f172a; border: 2px solid #334155; }
+        #reader video { border-radius: 8px; object-fit: cover; }
+        .status-box { margin-top: 20px; padding: 12px; border-radius: 8px; font-weight: bold; display: none; }
+        .status-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .badge-status { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 0.95rem; margin-top: 10px; }
+        .badge-asistencia { background: #166534; color: #dcfce7; border: 1px solid #22c55e; }
+        .badge-retardo { background: #854d0e; color: #fef9c3; border: 1px solid #eab308; }
+    </style>
+</head>
+<body>
+
+    <div class="scanner-card">
+        <h1 style="color: #38bdf8; margin-top: 0; font-size: 1.4rem;">📷 Escáner de Asistencia QR</h1>
+        <p style="color: #94a3b8; font-size: 0.9rem;">Apunta la cámara a la credencial del alumno</p>
+
+        <div id="reader"></div>
+
+        <div id="resultado-status" class="status-box"></div>
+        <div id="contenedor-badge"></div>
+
+        <br>
+        <a href="/menu" class="btn" style="background:#334155; color:white; text-decoration:none; padding:12px 20px; border-radius:8px; font-weight:bold; display:block; margin-top:15px; box-sizing:border-box;">Volver al Menú</a>
+    </div>
+
+    <script>
+        let escaneandoActivo = true;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            if (!escaneandoActivo) return;
+
+            try {
+                let idAlumno;
+                let nombreAlumno = "Alumno";
+
+                if (decodedText.startsWith('{')) {
+                    const datosAlumno = JSON.parse(decodedText);
+                    idAlumno = datosAlumno.id;
+                    nombreAlumno = datosAlumno.nombre || "Alumno";
+                } else {
+                    idAlumno = decodedText.trim();
+                }
+
+                if (idAlumno) {
+                    escaneandoActivo = false;
+                    registrarAsistenciaQR(idAlumno, nombreAlumno);
+                }
+            } catch (e) {
+                mostrarStatus("❌ Código QR no válido para el sistema escolar.", false);
+            }
+        }
+
+        async function registrarAsistenciaQR(idAlumno, nombre) {
+            try {
+                const response = await fetch('/guardar-asistencia-qr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_alumno: idAlumno })
+                });
+
+                const res = await response.json();
+                if (res.success) {
+                    let mensajeEstado = `✔️ ¡Registrado: ${nombre}!`;
+                    let badgeHtml = '';
+
+                    if (res.message && res.message.includes('Retardo')) {
+                        mensajeEstado = `⏳ ¡Retardo registrado: ${nombre}!`;
+                        badgeHtml = `<span class="badge-status badge-retardo">⏳ REGISTRADO COMO RETARDO</span>`;
+                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    } else {
+                        badgeHtml = `<span class="badge-status badge-asistencia">✔️ ASISTENCIA ACEPTADA</span>`;
+                        if (navigator.vibrate) navigator.vibrate(100);
+                    }
+
+                    mostrarStatus(mensajeEstado, true);
+                    document.getElementById('contenedor-badge').innerHTML = badgeHtml;
+                } else {
+                    mostrarStatus(`⚠️ ${res.message}`, false);
+                    document.getElementById('contenedor-badge').innerHTML = '';
+                }
+
+                // Reactivar escáner tras 2.5 segundos para el siguiente alumno
+                setTimeout(() => {
+                    escaneandoActivo = true;
+                    document.getElementById('contenedor-badge').innerHTML = '';
+                }, 2500);
+
+            } catch (err) {
+                mostrarStatus("❌ Error de conexión al registrar asistencia.", false);
+                escaneandoActivo = true;
+            }
+        }
+
+        function mostrarStatus(mensaje, esExito) {
+            const statusDiv = document.getElementById('resultado-status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = `status-box ${esExito ? 'status-success' : 'status-error'}`;
+            statusDiv.textContent = mensaje;
+
+            setTimeout(() => { statusDiv.style.display = 'none'; }, 3500);
+        }
+
+        // Inicializar con cámara trasera por defecto (environment)
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { fps: 15, qrbox: { width: 250, height: 250 }, facingMode: "environment" }, 
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>

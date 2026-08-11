@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Nuevo Alumno</title>
+  <style>
+    /* Reset básico y tipografía */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Tarjeta del formulario */
+    .form-card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .form-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    /* Grupo de campos */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .required {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    /* Entradas de texto y selector (100% uniformes) */
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      color: #334155;
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .form-control::placeholder {
+      color: #94a3b8;
+    }
+
+    /* Estilo personalizado para el <select> */
+    select.form-control {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2064748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    /* Botón Principal */
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      background-color: #2563eb;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-submit:hover {
+      background-color: #1d4ed8;
+    }
+
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+
+    /* Enlace / Botón Secundario */
+    .back-link-container {
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #64748b;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: #1e293b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-card">
+    <h1 class="form-title">Registrar Nuevo Alumno</h1>
+    <p class="form-subtitle">Asigna los datos del estudiante y selecciona su grupo correspondiente.</p>
+
+    <form action="#" method="POST">
+      
+      <div class="form-group">
+        <label for="nombre" class="form-label">Nombre(s) <span class="required">*</span></label>
+        <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Ej. Juan" required>
+      </div>
+
+      <div class="form-group">
+        <label for="apellidos" class="form-label">Apellido(s) <span class="required">*</span></label>
+        <input type="text" id="apellidos" name="apellidos" class="form-control" placeholder="Ej. Pérez" required>
+      </div>
+
+      <div class="form-group">
+        <label for="correo" class="form-label">Correo Electrónico <span class="required">*</span></label>
+        <input type="email" id="correo" name="correo" class="form-control" placeholder="ejemplo@correo.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="grupo" class="form-label">Grupo Asignado <span class="required">*</span></label>
+        <select id="grupo" name="grupo" class="form-control" required>
+          <option value="" disabled selected>Selecciona un grupo</option>
+          <option value="1a">Grupo 1° A</option>
+          <option value="1b">Grupo 1° B</option>
+          <option value="2a">Grupo 2° A</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="tutor" class="form-label">Nombre del Tutor Responsable <span class="required">*</span></label>
+        <input type="text" id="tutor" name="tutor" class="form-control" placeholder="Ej. María López Hernández" required>
+      </div>
+
+      <div class="form-group">
+        <label for="telefono1" class="form-label">Teléfono de Emergencia 1 <span class="required">*</span></label>
+        <input type="tel" id="telefono1" name="telefono1" class="form-control" placeholder="Ej. 5512345678" required>
+      </div>
+
+      <div class="form-group">
+        <label for="telefono2" class="form-label">Teléfono de Emergencia 2 (Opcional)</label>
+        <input type="tel" id="telefono2" name="telefono2" class="form-control" placeholder="Ej. 5587654321">
+      </div>
+
+      <button type="submit" class="btn-submit">Registrar Alumno</button>
+
+    </form>
+
+    <div class="back-link-container">
+      <a href="/menu" class="back-link">
+        <span>←</span> Volver al Menú
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>

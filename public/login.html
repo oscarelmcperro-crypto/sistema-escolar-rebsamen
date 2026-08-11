@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso al Sistema Escolar - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CANVAS DE FONDO OPTIMIZADO */
+        #gemini-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: #020617;
+            pointer-events: none;
+        }
+
+        /* CONTENEDOR CON BORDES GEMINI ANIMADOS */
+        .gemini-card-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            padding: 4px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            margin: 0 auto;
+        }
+
+        /* CAPA DE DEGRADADO MULTICOLOR ROTATORIO */
+        .gemini-card-wrapper::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: conic-gradient(
+                from 0deg,
+                #4f46e5,
+                #9333ea,
+                #ec4899,
+                #3b82f6,
+                #06b6d4,
+                #10b981,
+                #4f46e5
+            );
+            animation: geminiRotate 4s linear infinite;
+        }
+
+        /* RESPLANDOR EXTERIOR SUAVE */
+        .gemini-card-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: inherit;
+            filter: blur(15px);
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        @keyframes geminiRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="login-body">
+
+    <!-- CANVAS PARA EL FONDO DE DATOS -->
+    <canvas id="gemini-canvas"></canvas>
+
+    <img src="balon.png" alt="Balón Animado" class="balon-flotante">
+
+    <main class="login-container">
+        <div class="gemini-card-wrapper">
+            <section class="login-card">
+                <header class="login-header">
+                    <h2>Iniciar Sesión</h2>
+                    <p>Ingresa tus credenciales para acceder al sistema escolar</p>
+                </header>
+
+                <form action="/login" method="POST" class="login-form" autocomplete="on">
+                    <div class="form-group">
+                        <label for="username">Usuario</label>
+                        <input type="text" id="username" name="username" placeholder="Ej. admin" autocomplete="username" minlength="3" maxlength="50" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Ingresar</button>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <a href="/recuperar-cuenta" style="color: hsl(127, 91%, 55%); font-size: 0.9rem; text-decoration: none; font-weight: 500;">¿Olvidaste tu contraseña?</a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- SCRIPT ADAPTATIVO CON RENDERIZADO 100% NÍTIDO -->
+    <script>
+        const canvas = document.getElementById('gemini-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let dataNodes = [];
+        
+        // Detección de pantallas móviles/pequeñas para balancear carga en GPU
+        const esMovil = window.innerWidth < 768;
+        const totalNodes = esMovil ? 180 : 800;
+
+        const dataTokens = [
+            '0', '1', '0xFA', '0xFF', '0x00', '{ }', '< />', '=>',
+            'NULL', '&&', '||', '!=', 'ptr*', 'RAM', 'DB', 'PG', 'SYS',
+            'HTTP', '200', 'ACK', 'v1.0', 'SELECT', 'JOIN', 'async',
+            'await', 'Boolean', 'uint32_t', 'Float', 'true', 'false',
+            'POST', 'GET', 'req,res', 'pool.query'
+        ];
+
+        const tokenColors = ['#38bdf8', '#818cf8', '#34d399', '#c084fc', '#60a5fa', '#06b6d4', '#a855f7'];
+        const textCache = {};
+
+        // Pre-renderizar cada token en memoria para optimizar el dibujo
+        function getCachedText(text, color, size) {
+            const key = `${text}_${color}_${size}`;
+            if (!textCache[key]) {
+                const offscreen = document.createElement('canvas');
+                const offCtx = offscreen.getContext('2d');
+                offCtx.font = `bold ${size}px "Consolas", "Courier New", monospace`;
+                const metrics = offCtx.measureText(text);
+                
+                offscreen.width = Math.ceil(metrics.width) + 4;
+                offscreen.height = size + 6;
+
+                offCtx.font = `bold ${size}px "Consolas", "Courier New", monospace`;
+                offCtx.fillStyle = color;
+                offCtx.textBaseline = 'top';
+                offCtx.fillText(text, 2, 2);
+
+                textCache[key] = offscreen;
+            }
+            return textCache[key];
+        }
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            dataNodes = [];
+            for (let i = 0; i < totalNodes; i++) {
+                dataNodes.push(createDataNode());
+            }
+        }
+
+        function createDataNode() {
+            const angle = Math.random() * Math.PI * 2;
+            const maxDist = Math.hypot(width, height) * 0.85;
+            const dist = Math.random() * maxDist;
+            const text = dataTokens[Math.floor(Math.random() * dataTokens.length)];
+            const color = tokenColors[Math.floor(Math.random() * tokenColors.length)];
+            
+            // Tamaño de fuente escalado dinámicamente según pantalla
+            const size = (esMovil ? 7 : 8) + Math.floor(Math.random() * 6);
+
+            return {
+                x: width / 2 + Math.cos(angle) * dist,
+                y: height / 2 + Math.sin(angle) * dist,
+                angle: angle,
+                dist: dist,
+                speed: (0.0005 + Math.random() * 0.002) * (Math.random() > 0.5 ? 1 : -1),
+                alpha: 0.2 + Math.random() * 0.8,
+                image: getCachedText(text, color, size)
+            };
+        }
+
+        function drawDataStream() {
+            // Limpiado 100% opaco por cada cuadro para eliminar la estela y borrosidad
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, width, height);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            dataNodes.forEach(node => {
+                node.angle += node.speed;
+                node.x = centerX + Math.cos(node.angle) * node.dist;
+                node.y = centerY + Math.sin(node.angle) * node.dist * 0.82;
+
+                ctx.globalAlpha = node.alpha;
+                ctx.drawImage(node.image, node.x, node.y);
+            });
+
+            requestAnimationFrame(drawDataStream);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        drawDataStream();
+    </script>
+
+    <!-- SCRIPT DEL BALÓN REBOTANDO ORIGINAL -->
+    <script>
+        const balon = document.querySelector('.balon-flotante');
+
+        const diametro = 80;
+        let posX = Math.random() * (window.innerWidth - diametro); 
+        let posY = Math.random() * (window.innerHeight - diametro); 
+
+        let velocidadX = 4; 
+        let velocidadY = 4;
+        let grados = 0;
+
+        function animarRebote() {
+            const limiteDerecho = window.innerWidth;
+            const limiteInferior = window.innerHeight;
+
+            posX += velocidadX;
+            posY += velocidadY;
+
+            grados += 2; 
+
+            if (posX + diametro >= limiteDerecho || posX <= 0) {
+                velocidadX = -velocidadX;
+            }
+
+            if (posY + diametro >= limiteInferior || posY <= 0) {
+                velocidadY = -velocidadY;
+            }
+
+            balon.style.left = `${posX}px`;
+            balon.style.top = `${posY}px`;
+            balon.style.transform = `rotate(${grados}deg)`;
+
+            requestAnimationFrame(animarRebote);
+        }
+
+        animarRebote();
+
+        window.addEventListener('resize', () => {
+            if (posX + diametro > window.innerWidth) posX = window.innerWidth - diametro;
+            if (posY + diametro > window.innerHeight) posY = window.innerHeight - diametro;
+        });
+    </script>
+    <script src="/dark-mode.js"></script>
+</body>
+</html>

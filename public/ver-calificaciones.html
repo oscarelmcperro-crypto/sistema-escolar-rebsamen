@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concentrado de Calificaciones - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+    <main class="main-content">
+        
+        <!-- Encabezado y Navegación -->
+        <div class="page-header">
+            <div class="header-title">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <div>
+                    <h1>Concentrado General de Calificaciones</h1>
+                    <p class="subtitle">Historial académico de alumnos por grupo y materia</p>
+                </div>
+            </div>
+            <a href="/menu" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Volver al Menú</a>
+        </div>
+
+        <!-- Tarjetas de Resumen (KPIs) -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">Promedio General</span>
+                <span class="kpi-value" id="kpi-promedio">8.12</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Porcentaje de Aprobación</span>
+                <span class="kpi-value kpi-success" id="kpi-aprobados">83.3%</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Total Evaluaciones</span>
+                <span class="kpi-value" id="kpi-total">6</span>
+            </div>
+        </div>
+
+        <!-- Barra de Búsqueda y Filtros -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <input type="text" id="searchInput" onkeyup="filtrarTabla()" placeholder="🔍 Buscar por alumno..." class="filter-input">
+            </div>
+            <div class="filter-group">
+                <select id="selectGrupo" onchange="filtrarTabla()" class="filter-select">
+                    <option value="">Todos los Grupos</option>
+                    <option value="3°A">3° "A"</option>
+                    <option value="3°B">3° "B"</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select id="selectMateria" onchange="filtrarTabla()" class="filter-select">
+                    <option value="">Todas las Materias</option>
+                    <option value="Geografía">Geografía</option>
+                    <option value="Educación Física">Educación Física</option>
+                    <option value="Formación Cívica y Ética">Formación Cívica y Ética</option>
+                    <option value="Inglés">Inglés</option>
+                    <option value="Ciencias">Ciencias</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tabla de Calificaciones -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table id="tabla-calificaciones-container">
+                    <thead>
+                        <tr>
+                            <th>Grupo</th>
+                            <th>Alumno</th>
+                            <th>Materia</th>
+                            <th class="text-center">P1</th>
+                            <th class="text-center">P2</th>
+                            <th class="text-center">P3</th>
+                            <th class="text-center">Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-calificaciones">
+                        <tr>
+                            <td>3°A</td>
+                            <td class="text-capitalize">Contreras, Luis</td>
+                            <td>Geografía</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center grade-badge grade-pass">10.00</td>
+                        </tr>
+                        <tr>
+                            <td>3°A</td>
+                            <td class="text-capitalize">Contreras, Luis</td>
+                            <td>Educación Física</td>
+                            <td class="text-center grade-fail">5.00</td>
+                            <td class="text-center">6.70</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center grade-badge grade-pass">7.23</td>
+                        </tr>
+                        <tr>
+                            <td>3°A</td>
+                            <td class="text-capitalize">Contreras, Luis</td>
+                            <td>Formación Cívica y Ética</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center grade-fail">0.00</td>
+                            <td class="text-center grade-fail">0.00</td>
+                            <td class="text-center grade-badge grade-fail">3.33</td>
+                        </tr>
+                        <tr>
+                            <td>3°A</td>
+                            <td class="text-capitalize">Vidal Beltrán, Yhisar Gisela</td>
+                            <td>Inglés</td>
+                            <td class="text-center grade-fail">5.50</td>
+                            <td class="text-center grade-fail">5.00</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center grade-badge grade-pass">6.83</td>
+                        </tr>
+                        <tr>
+                            <td>3°A</td>
+                            <td class="text-capitalize">Vidal Beltrán, Yhisar Gisela</td>
+                            <td>Educación Física</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center grade-badge grade-pass">10.00</td>
+                        </tr>
+                        <tr>
+                            <td>3°A</td>
+                            <td class="text-capitalize">Vidal Beltrán, Yhisar Gisela</td>
+                            <td>Ciencias</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center">10.00</td>
+                            <td class="text-center grade-badge grade-pass">10.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script de Filtro en Tiempo Real -->
+    <script>
+        function filtrarTabla() {
+            const search = document.getElementById("searchInput").value.toLowerCase();
+            const grupo = document.getElementById("selectGrupo").value.toLowerCase();
+            const materia = document.getElementById("selectMateria").value.toLowerCase();
+            
+            const filas = document.querySelectorAll("#tabla-calificaciones tr");
+
+            filas.forEach(fila => {
+                const textoGrupo = fila.children[0].textContent.toLowerCase();
+                const textoAlumno = fila.children[1].textContent.toLowerCase();
+                const textoMateria = fila.children[2].textContent.toLowerCase();
+
+                const coincideSearch = textoAlumno.includes(search);
+                const coincideGrupo = grupo === "" || textoGrupo.includes(grupo);
+                const coincideMateria = materia === "" || textoMateria.includes(materia);
+
+                if (coincideSearch && coincideGrupo && coincideMateria) {
+                    fila.style.display = "";
+                } else {
+                    fila.style.display = "none";
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura Masiva de Calificaciones - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 25px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .header-panel h1 { color: #1e3a8a; margin: 0; font-size: 1.8rem; }
+        .btn-menu { background-color: #64748b; color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+
+        /* Toolbar de Filtros */
+        .toolbar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
+        .form-group label { font-size: 0.88rem; font-weight: bold; color: #1e3a8a; }
+        .select-custom { padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem; font-weight: 500; }
+
+        /* Tabla de Captura */
+        .table-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1a2332; color: white; padding: 14px 16px; text-align: left; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #334155; vertical-align: middle; }
+        tr:hover { background-color: #f8fafc; }
+
+        /* Inputs de Notas en Tabla */
+        .input-nota { width: 65px; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: bold; outline: none; transition: border-color 0.2s; }
+        .input-nota:focus { border-color: #2563eb; background-color: #eff6ff; }
+        .promedio-cell { font-weight: bold; color: #1e3a8a; font-size: 1rem; text-align: center; }
+
+        /* Botón de Guardado Masivo */
+        .btn-save-all { background-color: #16a34a; color: white; border: none; padding: 14px 25px; border-radius: 10px; font-size: 1.05rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); transition: background-color 0.2s; }
+        .btn-save-all:hover { background-color: #15803d; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="header-panel">
+            <h1>📊 Captura Masiva de Calificaciones</h1>
+            <a href="/menu" class="btn-menu">Volver al Menú</a>
+        </div>
+
+        <!-- SELECCIÓN DE GRUPO Y MATERIA -->
+        <div class="toolbar">
+            <div class="form-group">
+                <label for="select-grupo">📁 Grupo:</label>
+                <select id="select-grupo" class="select-custom" onchange="cargarAlumnosYNotas()">
+                    <option value="">-- Selecciona un Grupo --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="select-materia">📚 Asignatura / Materia:</label>
+                <select id="select-materia" class="select-custom" onchange="cargarAlumnosYNotas()">
+                    <option value="">-- Selecciona una Materia --</option>
+                    <option value="Español">Español</option>
+                    <option value="Matemáticas">Matemáticas</option>
+                    <option value="Ciencias">Ciencias</option>
+                    <option value="Historia">Historia</option>
+                    <option value="Geografía">Geografía</option>
+                    <option value="Formación Cívica y Ética">Formación Cívica y Ética</option>
+                    <option value="Inglés">Inglés</option>
+                    <option value="Educación Física">Educación Física</option>
+                    <option value="Artes">Artes</option>
+                    <option value="Tecnología">Tecnología</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- TABLA MASIVA -->
+        <form id="form-masivo" onsubmit="guardarMasivo(event)">
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%; text-align: center;">ID</th>
+                            <th style="width: 40%;">Alumno</th>
+                            <th style="width: 12%; text-align: center;">Parcial 1</th>
+                            <th style="width: 12%; text-align: center;">Parcial 2</th>
+                            <th style="width: 12%; text-align: center;">Parcial 3</th>
+                            <th style="width: 14%; text-align: center;">Promedio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px;">
+                                Selecciona un <strong>Grupo</strong> y una <strong>Materia</strong> para desplegar la lista.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="submit" id="btn-guardar" class="btn-save-all" style="display: none;">
+                💾 Guardar Todas las Calificaciones del Grupo
+            </button>
+        </form>
+
+    </div>
+
+    <script>
+        let listaAlumnosGlobal = [];
+
+        // Inicializar grupos
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const res = await fetch('/api/lista-alumnos');
+                listaAlumnosGlobal = await res.json();
+
+                const gruposUnicos = [...new Set(listaAlumnosGlobal.map(a => a.grupo.replace(/"/g, '').trim()))].sort();
+                const selectGrupo = document.getElementById('select-grupo');
+                
+                gruposUnicos.forEach(g => {
+                    selectGrupo.innerHTML += `<option value="${g}">${g}</option>`;
+                });
+            } catch (err) {
+                console.error("Error cargando alumnos:", err);
+            }
+        });
+
+        // Renderizar alumnos del grupo seleccionado
+        function cargarAlumnosYNotas() {
+            const grupo = document.getElementById('select-grupo').value;
+            const materia = document.getElementById('select-materia').value;
+            const tbody = document.getElementById('tabla-body');
+            const btnGuardar = document.getElementById('btn-guardar');
+
+            if (!grupo || !materia) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px;">Selecciona un <strong>Grupo</strong> y una <strong>Materia</strong> para desplegar la lista.</td></tr>`;
+                btnGuardar.style.display = 'none';
+                return;
+            }
+
+            const alumnosFiltrados = listaAlumnosGlobal.filter(a => a.grupo.replace(/"/g, '').trim() === grupo);
+
+            if (alumnosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px;">No hay alumnos registrados en el grupo ${grupo}.</td></tr>`;
+                btnGuardar.style.display = 'none';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            alumnosFiltrados.forEach(a => {
+                tbody.innerHTML += `
+                    <tr class="fila-alumno" data-id="${a.id}">
+                        <td style="text-align: center;"><strong>${a.id}</strong></td>
+                        <td><strong>${a.apellido}</strong>, ${a.nombre}</td>
+                        <td style="text-align: center;">
+                            <input type="number" step="0.1" min="0" max="10" class="input-nota p1" placeholder="--" oninput="calcFila(this)">
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="number" step="0.1" min="0" max="10" class="input-nota p2" placeholder="--" oninput="calcFila(this)">
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="number" step="0.1" min="0" max="10" class="input-nota p3" placeholder="--" oninput="calcFila(this)">
+                        </td>
+                        <td class="promedio-cell prom">0.00</td>
+                    </tr>
+                `;
+            });
+
+            btnGuardar.style.display = 'block';
+        }
+
+        // Calcular promedio dinámico por fila
+        function calcFila(input) {
+            const fila = input.closest('tr');
+            const p1 = parseFloat(fila.querySelector('.p1').value);
+            const p2 = parseFloat(fila.querySelector('.p2').value);
+            const p3 = parseFloat(fila.querySelector('.p3').value);
+
+            const notas = [p1, p2, p3].filter(n => !isNaN(n));
+            const promCell = fila.querySelector('.prom');
+
+            if (notas.length > 0) {
+                const suma = notas.reduce((a, b) => a + b, 0);
+                promCell.textContent = (suma / notas.length).toFixed(2);
+            } else {
+                promCell.textContent = "0.00";
+            }
+        }
+
+        // Guardar lote masivo al Backend
+        async function guardarMasivo(e) {
+            e.preventDefault();
+            const materia = document.getElementById('select-materia').value;
+            const filas = document.querySelectorAll('.fila-alumno');
+
+            const listaCalificaciones = [];
+
+            filas.forEach(fila => {
+                const idAlumno = fila.getAttribute('data-id');
+                const p1 = fila.querySelector('.p1').value;
+                const p2 = fila.querySelector('.p2').value;
+                const p3 = fila.querySelector('.p3').value;
+
+                // Solo agregar si capturaron al menos una nota
+                if (p1 !== '' || p2 !== '' || p3 !== '') {
+                    listaCalificaciones.push({
+                        id_alumno: idAlumno,
+                        materia: materia,
+                        parcial1: p1 !== '' ? parseFloat(p1) : null,
+                        parcial2: p2 !== '' ? parseFloat(p2) : null,
+                        parcial3: p3 !== '' ? parseFloat(p3) : null
+                    });
+                }
+            });
+
+            if (listaCalificaciones.length === 0) {
+                alert("Por favor captura al menos una calificación antes de guardar.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/guardar-calificaciones-masivo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ calificaciones: listaCalificaciones })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert(`✨ ¡Éxito! Se registraron/actualizaron ${data.procesados} calificaciones correctamente.`);
+                } else {
+                    alert("Error guardando calificaciones.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error de conexión al guardar.");
+            }
+        }
+    </script>
+
+</body>
+</html>

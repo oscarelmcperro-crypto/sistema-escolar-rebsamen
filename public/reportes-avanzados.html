@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes Institucionales Avanzados - Enrique C. Rébsamen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; padding: 25px; color: #1e293b; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .header h1 { color: #1e3a8a; font-size: 1.6rem; display: flex; align-items: center; gap: 10px; }
+        .btn-menu { background: #64748b; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+        
+        .filters-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; }
+        .form-group label { font-size: 0.82rem; font-weight: bold; color: #1e3a8a; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; }
+        
+        .btn-action { background: #1e3a8a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background: #1d4ed8; }
+
+        .table-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1e3a8a; color: white; padding: 12px 16px; text-align: left; font-size: 0.88rem; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        tr:hover { background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fa-solid fa-chart-line"></i> Reportes Institucionales Avanzados</h1>
+            <a href="/menu" class="btn-menu">← Volver al Menú</a>
+        </div>
+
+        <div class="filters-card">
+            <div class="form-group">
+                <label>Grupo:</label>
+                <select id="filtroGrupo">
+                    <option value="">-- Todos los Grupos --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Desde (Fecha):</label>
+                <input type="date" id="fechaInicio">
+            </div>
+            <div class="form-group">
+                <label>Hasta (Fecha):</label>
+                <input type="date" id="fechaFin">
+            </div>
+            <button type="button" class="btn-action" onclick="cargarReporte()"><i class="fa-solid fa-filter"></i> Generar Reporte</button>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">Grupo</th>
+                        <th>Alumno</th>
+                        <th style="text-align: center;">Promedio General</th>
+                        <th style="text-align: center;">Asistencias</th>
+                        <th style="text-align: center;">Faltas</th>
+                        <th style="text-align: center;">Retardos</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaResultados">
+                    <tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:30px;">Seleccione los filtros y haga clic en "Generar Reporte".</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const res = await fetch('/api/grupos-existentes');
+                const grupos = await res.json();
+                const select = document.getElementById('filtroGrupo');
+                grupos.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.grupo;
+                    opt.textContent = g.grupo;
+                    select.appendChild(opt);
+                });
+            } catch (e) { console.error("Error al cargar grupos", e); }
+        });
+
+        async function cargarReporte() {
+            const grupo = document.getElementById('filtroGrupo').value;
+            const inicio = document.getElementById('fechaInicio').value;
+            const fin = document.getElementById('fechaFin').value;
+
+            try {
+                const res = await fetch(`/api/reporte-avanzado-datos?grupo=${encodeURIComponent(grupo)}&inicio=${inicio}&fin=${fin}`);
+                const data = await res.json();
+                const tbody = document.getElementById('tablaResultados');
+                tbody.innerHTML = '';
+
+                if (!data.success || data.alumnos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:25px;">No se encontraron registros para los filtros seleccionados.</td></tr>';
+                    return;
+                }
+
+                data.alumnos.forEach(a => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="text-align: center;"><strong>${a.grupo}</strong></td>
+                            <td style="text-transform: capitalize;"><strong>${a.apellido}</strong>, ${a.nombre}</td>
+                            <td style="text-align: center; color: #1e3a8a; font-weight: bold;">${a.promedio_general}</td>
+                            <td style="text-align: center; color: #15803d; font-weight: bold;">${a.total_asistencias}</td>
+                            <td style="text-align: center; color: #b91c1c; font-weight: bold;">${a.total_faltas}</td>
+                            <td style="text-align: center; color: #a16207; font-weight: bold;">${a.total_retardos}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error("Error al cargar datos:", e);
+                alert("Error al conectar con el servidor.");
+            }
+        }
+    </script>
+</body>
+</html>

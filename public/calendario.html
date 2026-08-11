@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <!-- Librería SweetAlert2 para Toasts profesionales -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Calendario Académico - Enrique C. Rébsamen</title>
+    <style>
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 25px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-panel h1 { color: #1e3a8a; margin: 0; font-size: 1.8rem; }
+        .btn-menu { background-color: #64748b; color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+        .btn-primary { background-color: #2563eb; color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        
+        /* Contenedor del Calendario */
+        .calendar-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-controls h2 { margin: 0; color: #1e3a8a; font-size: 1.4rem; text-transform: capitalize; }
+        .btn-nav { background: #1e3a8a; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-nav:hover { background: #1d4ed8; }
+
+        /* Malla del Calendario */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day-name { text-align: center; font-weight: bold; color: #64748b; padding: 8px 0; font-size: 0.85rem; text-transform: uppercase; }
+        
+        .day-cell { min-height: 90px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; position: relative; transition: background 0.2s; }
+        .day-cell.es-admin { cursor: pointer; }
+        .day-cell.es-admin:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .day-number { font-weight: bold; font-size: 0.85rem; color: #334155; margin-bottom: 4px; }
+        .day-cell.other-month { opacity: 0.3; background: #f1f5f9; cursor: default !important; }
+        .day-cell.today { border: 2px solid #3b82f6; background: #eff6ff; }
+        
+        /* Eventos dentro de los días */
+        .event-badge { font-size: 0.72rem; font-weight: bold; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px; color: white; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: transform 0.1s; }
+        .event-badge.clickable { cursor: pointer; }
+        .event-badge.clickable:hover { transform: scale(1.03); opacity: 0.9; }
+        .badge-EVALUACION, .badge-Examen { background-color: #ef4444; }
+        .badge-INHABIL, .badge-Inhábil { background-color: #64748b; }
+        .badge-ACADEMICO, .badge-Académico { background-color: #3b82f6; }
+        .badge-ADMINISTRATIVO, .badge-Administrativo { background-color: #f59e0b; }
+        
+        /* Leyenda de colores */
+        .legend { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: bold; color: #475569; }
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        /* Modal Interactivo de Eventos */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-card h2 { margin-top: 0; color: #1e3a8a; font-size: 1.4rem; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-weight: bold; font-size: 0.88rem; color: #334155; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-modal-save { background: #16a34a; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-modal-delete { background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; display: none; }
+        .btn-modal-close { background: #64748b; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-panel">
+            <h1>📅 Calendario Académico</h1>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-nuevo-evento" class="btn-primary" onclick="abrirModalCrear()" style="display: none;">+ Agregar Evento</button>
+                <a href="/menu" class="btn-menu">Volver al Menú</a>
+            </div>
+        </div>
+
+        <div class="calendar-card">
+            <div class="calendar-controls">
+                <button class="btn-nav" onclick="cambiarMes(-1)">◀ Anterior</button>
+                <h2 id="titulo-mes">--</h2>
+                <button class="btn-nav" onclick="cambiarMes(1)">Siguiente ▶</button>
+            </div>
+
+            <div class="calendar-grid" id="grid-calendario">
+                <!-- Los días se renderizan con JS -->
+            </div>
+
+            <!-- Leyenda -->
+            <div class="legend">
+                <div class="legend-item"><div class="color-dot" style="background:#ef4444;"></div> Evaluaciones / Exámenes</div>
+                <div class="legend-item"><div class="color-dot" style="background:#64748b;"></div> Días Inhábiles / Festivos</div>
+                <div class="legend-item"><div class="color-dot" style="background:#3b82f6;"></div> Eventos Académicos</div>
+                <div class="legend-item"><div class="color-dot" style="background:#f59e0b;"></div> Fechas Administrativas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE INTERACCIÓN (CREAR / EDITAR / ELIMINAR) -->
+    <div class="modal-overlay" id="modal-evento">
+        <div class="modal-card">
+            <h2 id="modal-titulo-txt">✨ Nuevo Evento Académico</h2>
+            <form onsubmit="guardarEvento(event)">
+                <input type="hidden" id="ev-id">
+                
+                <div class="form-group">
+                    <label>Título del Evento:</label>
+                    <input type="text" id="ev-titulo" placeholder="Ej. Inicio de Exámenes Parciales" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Evento:</label>
+                    <select id="ev-tipo" onchange="verificarInhabilAuto()" required>
+                        <option value="Examen">Evaluaciones / Exámenes</option>
+                        <option value="Inhábil">Día Inhábil / Festivo</option>
+                        <option value="Académico" selected>Evento Académico</option>
+                        <option value="Administrativo">Fecha Administrativa</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Fecha Inicio:</label>
+                        <input type="date" id="ev-inicio" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Fecha Fin:</label>
+                        <input type="date" id="ev-fin" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción / Detalles:</label>
+                    <textarea id="ev-desc" rows="2" placeholder="Opcional..."></textarea>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="ev-inhabil" style="width: auto;">
+                    <label for="ev-inhabil" style="margin: 0;">¿Bloquea pase de lista? (Día Inhábil)</label>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-modal-save" id="btn-guardar-txt">Guardar Evento 💾</button>
+                    <button type="button" class="btn-modal-delete" id="btn-eliminar-ev" onclick="eliminarEventoActual()">🗑️ Eliminar</button>
+                    <button type="button" class="btn-modal-close" onclick="cerrarModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let fechaActual = new Date();
+        let esUsuarioAdmin = false;
+        let eventosCargados = [];
+
+        // Función global para mostrar Toasts elegantes en la esquina
+        function mostrarToast(icono, mensaje) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+            Toast.fire({ icon: icono, title: mensaje });
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await verificarRolUsuario();
+            cargarCalendario();
+        });
+
+        async function verificarRolUsuario() {
+            try {
+                const res = await fetch('/api/usuario-actual');
+                const data = await res.json();
+                if (data.logueado && data.rol) {
+                    const rol = data.rol.toLowerCase();
+                    if (rol.includes('admin') || rol.includes('director') || rol === 'administrador') {
+                        esUsuarioAdmin = true;
+                        document.getElementById('btn-nuevo-evento').style.display = 'inline-block';
+                    }
+                }
+            } catch (e) {
+                console.error("Error verificando rol de usuario:", e);
+            }
+        }
+
+        async function cargarCalendario() {
+            const mes = fechaActual.getMonth() + 1;
+            const anio = fechaActual.getFullYear();
+
+            const opcionesMes = { month: 'long', year: 'numeric' };
+            document.getElementById('titulo-mes').textContent = fechaActual.toLocaleDateString('es-MX', opcionesMes);
+
+            try {
+                const res = await fetch(`/api/calendario?mes=${mes}&anio=${anio}`);
+                const response = await res.json();
+                eventosCargados = response.data || [];
+
+                renderizarGrid(mes, anio, eventosCargados);
+            } catch (error) {
+                console.error("Error al cargar eventos:", error);
+            }
+        }
+
+        function renderizarGrid(mes, anio, eventos) {
+            const grid = document.getElementById('grid-calendario');
+            grid.innerHTML = '';
+
+            const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            diasSemana.forEach(dia => {
+                grid.innerHTML += `<div class="day-name">${dia}</div>`;
+            });
+
+            const primerDiaMes = new Date(anio, mes - 1, 1).getDay();
+            const totalDiasMes = new Date(anio, mes, 0).getDate();
+
+            for (let i = 0; i < primerDiaMes; i++) {
+                grid.innerHTML += `<div class="day-cell other-month"></div>`;
+            }
+
+            const hoy = new Date();
+            for (let dia = 1; dia <= totalDiasMes; dia++) {
+                const esHoy = (dia === hoy.getDate() && mes === (hoy.getMonth() + 1) && anio === hoy.getFullYear());
+                const fechaDiaStr = `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                
+                const eventosDelDia = eventos.filter(e => {
+                    const fInicio = new Date(e.fecha_inicio).getDate();
+                    return fInicio === dia;
+                });
+
+                let htmlEventos = '';
+                eventosDelDia.forEach(ev => {
+                    const idReal = ev.id_evento || ev.id;
+                    const clickableClass = esUsuarioAdmin ? 'clickable' : '';
+                    htmlEventos += `<span class="event-badge badge-${ev.tipo_evento} ${clickableClass}" 
+                                         onclick="clickEvento(event, ${idReal})" 
+                                         title="${ev.descripcion || ev.titulo}">${ev.titulo}</span>`;
+                });
+
+                const adminClass = esUsuarioAdmin ? 'es-admin' : '';
+                grid.innerHTML += `
+                    <div class="day-cell ${esHoy ? 'today' : ''} ${adminClass}" onclick="clickDia('${fechaDiaStr}')">
+                        <div class="day-number">${dia}</div>
+                        ${htmlEventos}
+                    </div>
+                `;
+            }
+        }
+
+        function cambiarMes(delta) {
+            fechaActual.setMonth(fechaActual.getMonth() + delta);
+            cargarCalendario();
+        }
+
+        function clickDia(fechaStr) {
+            if (!esUsuarioAdmin) return;
+            abrirModalCrear(fechaStr);
+        }
+
+        function clickEvento(e, idEvento) {
+            if (!esUsuarioAdmin) return;
+            e.stopPropagation();
+            
+            const evento = eventosCargados.find(ev => (ev.id_evento || ev.id) === idEvento);
+            if (evento) {
+                abrirModalEditar(evento);
+            }
+        }
+
+        function abrirModalCrear(fechaStr = '') {
+            document.getElementById('modal-titulo-txt').textContent = "✨ Nuevo Evento Académico";
+            document.getElementById('btn-guardar-txt').textContent = "Guardar Evento 💾";
+            document.getElementById('btn-eliminar-ev').style.display = "none";
+            
+            document.getElementById('ev-id').value = "";
+            document.getElementById('ev-titulo').value = "";
+            document.getElementById('ev-tipo').value = "Académico";
+            document.getElementById('ev-inicio').value = fechaStr || "";
+            document.getElementById('ev-fin').value = fechaStr || "";
+            document.getElementById('ev-desc').value = "";
+            document.getElementById('ev-inhabil').checked = false;
+
+            document.getElementById('modal-evento').style.display = 'flex';
+        }
+
+        function abrirModalEditar(evento) {
+            document.getElementById('modal-titulo-txt').textContent = "✏️ Editar Evento Académico";
+            document.getElementById('btn-guardar-txt').textContent = "Actualizar Cambios 💾";
+            document.getElementById('btn-eliminar-ev').style.display = "inline-block";
+
+            document.getElementById('ev-id').value = evento.id_evento || evento.id;
+            document.getElementById('ev-titulo').value = evento.titulo;
+            document.getElementById('ev-tipo').value = evento.tipo_evento || "Académico";
+            document.getElementById('ev-inicio').value = evento.fecha_inicio ? evento.fecha_inicio.substring(0, 10) : "";
+            document.getElementById('ev-fin').value = evento.fecha_fin ? evento.fecha_fin.substring(0, 10) : "";
+            document.getElementById('ev-desc').value = evento.descripcion || "";
+            document.getElementById('ev-inhabil').checked = evento.es_dia_inhabil || false;
+
+            document.getElementById('modal-evento').style.display = 'flex';
+        }
+
+        function cerrarModal() { 
+            document.getElementById('modal-evento').style.display = 'none'; 
+        }
+
+        function verificarInhabilAuto() {
+            const tipo = document.getElementById('ev-tipo').value;
+            document.getElementById('ev-inhabil').checked = (tipo === 'Inhábil');
+        }
+
+        async function guardarEvento(e) {
+            e.preventDefault();
+            const id = document.getElementById('ev-id').value;
+            const esEdicion = id !== "";
+
+            const payload = {
+                id: id ? parseInt(id) : null,
+                titulo: document.getElementById('ev-titulo').value,
+                tipo_evento: document.getElementById('ev-tipo').value,
+                fecha_inicio: document.getElementById('ev-inicio').value,
+                fecha_fin: document.getElementById('ev-fin').value,
+                descripcion: document.getElementById('ev-desc').value,
+                es_dia_inhabil: document.getElementById('ev-inhabil').checked
+            };
+
+            const url = esEdicion ? `/api/calendario/${id}` : '/api/calendario';
+            const method = esEdicion ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    cerrarModal();
+                    cargarCalendario();
+                    mostrarToast('success', esEdicion ? 'Evento actualizado con éxito' : 'Evento creado correctamente');
+                } else {
+                    mostrarToast('error', 'Error: ' + data.message);
+                }
+            } catch (err) {
+                console.error(err);
+                mostrarToast('error', 'Error al procesar la solicitud.');
+            }
+        }
+
+        async function eliminarEventoActual() {
+            const id = document.getElementById('ev-id').value;
+            if (!id) return;
+
+            // Alerta de confirmación elegante con SweetAlert2
+            const result = await Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción eliminará el evento del calendario de forma permanente.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch(`/api/calendario/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    cerrarModal();
+                    cargarCalendario();
+                    mostrarToast('success', 'Evento eliminado correctamente');
+                } else {
+                    mostrarToast('error', 'Error: ' + (data.message || 'No se pudo eliminar'));
+                }
+            } catch (err) {
+                console.error(err);
+                mostrarToast('error', 'Error al eliminar el evento.');
+            }
+        }
+    </script>
+</body>
+</html>

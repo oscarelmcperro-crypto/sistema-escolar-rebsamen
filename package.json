@@ -1,0 +1,27 @@
+{
+  "name": "sdcdaycdc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.1",
+    "pdfkit": "^0.19.1",
+    "pdfkit-table": "^0.2.11",
+    "pg": "^8.22.0",
+    "puppeteer": "^25.2.1",
+    "qrcode": "^1.5.4"
+  }
+}
