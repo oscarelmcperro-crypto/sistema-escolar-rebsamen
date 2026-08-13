@@ -58,7 +58,9 @@ const transportador = nodemailer.createTransport({
     }
 });
 
-// Configuración del Pool Conector de PostgreSQL para Railway
+// ==========================================
+// CONFIGURACIÓN DE POSTGRESQL PARA RAILWAY
+// ==========================================
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -66,9 +68,7 @@ const pool = new Pool({
     }
 });
 
-// ==========================================
-// INICIALIZACIÓN COMENTADA PARA EVITAR ERRORES DE ARRANQUE
-// ==========================================
+// Inicialización Segura: Asegurar cuenta Administrador Maestra al arrancar (Comentada para evitar bloqueos de despliegue)
 /*
 (async () => {
     try {
@@ -190,6 +190,7 @@ function verificarAdmin(req, res, next) {
     if (req.session && req.session.usuarioLogueado) {
         const rol = (req.session.rol || '').toLowerCase().trim();
         
+        // Excluir docentes/profesores/maestros para no permitirles acciones administrativas
         const esDocente = rol.includes('docente') || rol.includes('profesor') || rol.includes('maestro');
         const esAdmin = (rol.includes('admin') || rol.includes('director') || rol === 'administrador') && !esDocente;
 
@@ -237,6 +238,7 @@ function verificarAlumno(req, res, next) {
 //          ENDPOINTS AUXILIARES (API)
 // ==========================================
 
+// Rutas de Calendario Académico (Ajustado usando id_evento)
 app.get('/api/calendario', async (req, res) => {
     const { mes, anio } = req.query;
     try {
@@ -1189,6 +1191,7 @@ app.get('/menu', verificarSesion, (req, res) => {
     res.sendFile(path.join(__dirname, 'public/menu.html'));
 });
 
+// Ruta para la vista visual del Calendario Académico
 app.get('/calendario', verificarSesion, (req, res) => {
     res.sendFile(path.join(__dirname, 'public/calendario.html'));
 });
@@ -1315,6 +1318,7 @@ const guardarAlumnoHandler = async (req, res) => {
     try {
         await clienteBD.query('BEGIN');
 
+        // 1. Insertar el alumno dejando que la secuencia automática asigne el ID
         const queryAlumno = `
             INSERT INTO alumnos (nombre, apellido, email, grupo, tutor, telefono1, telefono2) 
             VALUES ($1, $2, $3, $4, $5, $6, $7) 
@@ -1330,6 +1334,7 @@ const guardarAlumnoHandler = async (req, res) => {
         const passwordTemporal = 'alumno1234'; 
         const hashPassword = await bcrypt.hash(passwordTemporal, saltRounds);
         
+        // 2. Insertar el usuario con su propia secuencia automática sin chocar con el ID de alumnos
         const queryUsuario = `
             INSERT INTO usuarios (username, password, id_rol, nombre, apellido, email, cambiar_password) 
             VALUES ($1, $2, $3, $4, $5, $6, TRUE)
@@ -3271,5 +3276,5 @@ app.get('/logout', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
