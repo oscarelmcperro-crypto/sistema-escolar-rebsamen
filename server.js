@@ -58,6 +58,9 @@ const transportador = nodemailer.createTransport({
     }
 });
 
+const { Pool } = require('pg');
+
+// Configuración limpia usando DATABASE_URL de Railway
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -65,6 +68,20 @@ const pool = new Pool({
     }
 });
 
+// Prueba la conexión sin crashear el servidor si falla al inicio
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('Error al conectar a la BD (pero el servidor seguirá vivo):', err.stack);
+    } else {
+        console.log('¡Conexión exitosa a PostgreSQL en la nube!');
+        release();
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
 
 // Inicialización Segura: Asegurar cuenta Administrador Maestra al arrancar
 (async () => {
