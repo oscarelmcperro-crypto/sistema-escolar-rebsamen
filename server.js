@@ -58,25 +58,13 @@ const transportador = nodemailer.createTransport({
     }
 });
 
-const express = require('express');
-const { Pool } = require('pg');
-
-const app = express();
-
-// Configuración del Pool de PostgreSQL con la URL de Railway
+// Configuración del Pool Conector de PostgreSQL
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
-});
-
-// Middleware y rutas de tu aplicación van aquí...
-
-// Arranque directo del servidor web para evitar el error 502
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'asistencias_y_concentrado_de_calificaciones',
+    password: process.env.DB_PASSWORD,
+    port: parseInt(process.env.DB_PORT) || 5432,
 });
 
 // Inicialización Segura: Asegurar cuenta Administrador Maestra al arrancar
@@ -399,8 +387,7 @@ app.post('/guardar-tarea', verificarSesion, upload.single('archivo_adjunto'), as
 
 app.post('/subir-entrega', verificarSesion, upload.single('archivo_alumno'), async (req, res) => {
     const { id_tarea, comentario } = req.body;
-    const username = req.session.username;
-    const emailSesion = req.session.email;
+    const idAlumno = req.session.usuarioId;
     const archivoAlumno = req.file ? req.file.filename : null;
 
     if (!archivoAlumno) {
@@ -408,22 +395,10 @@ app.post('/subir-entrega', verificarSesion, upload.single('archivo_alumno'), asy
     }
 
     try {
-        const resAlumno = await pool.query(`
-            SELECT id FROM alumnos 
-            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
-            LIMIT 1
-        `, [emailSesion || '', `%${username || ''}%`]);
-
-        if (resAlumno.rows.length === 0) {
-            return res.status(400).send("No se encontró un expediente de alumno asociado para realizar la entrega.");
-        }
-
-        const idAlumnoReal = resAlumno.rows[0].id;
-
         await pool.query(
             `INSERT INTO entregas (id_tarea, id_alumno, archivo_alumno, comentario)
              VALUES ($1, $2, $3, $4)`,
-            [id_tarea, idAlumnoReal, archivoAlumno, comentario]
+            [id_tarea, idAlumno, archivoAlumno, comentario]
         );
 
         res.send(generarPantallaExito({
@@ -440,17 +415,8 @@ app.post('/subir-entrega', verificarSesion, upload.single('archivo_alumno'), asy
 
 app.get('/api/lista-tareas', verificarSesion, async (req, res) => {
     try {
-        const username = req.session.username;
-        const emailSesion = req.session.email;
+        const idUsuario = req.session.usuarioId;
         const rol = req.session.rol || 'alumno';
-
-        const alumnoRes = await pool.query(`
-            SELECT id FROM alumnos 
-            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
-            LIMIT 1
-        `, [emailSesion || '', `%${username || ''}%`]);
-
-        const idAlumnoReal = alumnoRes.rows.length > 0 ? alumnoRes.rows[0].id : 0;
 
         const result = await pool.query(`
             SELECT t.*, 
@@ -459,7 +425,7 @@ app.get('/api/lista-tareas', verificarSesion, async (req, res) => {
                    (SELECT COUNT(*) FROM entregas e WHERE e.id_tarea = t.id) as total_entregas
             FROM tareas t 
             ORDER BY t.id DESC
-        `, [idAlumnoReal]);
+        `, [idUsuario]);
 
         res.json({ success: true, tareas: result.rows, rol: rol });
     } catch (err) {
@@ -470,16 +436,7 @@ app.get('/api/lista-tareas', verificarSesion, async (req, res) => {
 
 app.get('/api/tareas-pendientes-count', verificarSesion, async (req, res) => {
     try {
-        const username = req.session.username;
-        const emailSesion = req.session.email;
-
-        const alumnoRes = await pool.query(`
-            SELECT id FROM alumnos 
-            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
-            LIMIT 1
-        `, [emailSesion || '', `%${username || ''}%`]);
-
-        const idAlumnoReal = alumnoRes.rows.length > 0 ? alumnoRes.rows[0].id : 0;
+        const idUsuario = req.session.usuarioId;
 
         const result = await pool.query(`
             SELECT COUNT(*) as pendientes 
@@ -488,7 +445,7 @@ app.get('/api/tareas-pendientes-count', verificarSesion, async (req, res) => {
                 SELECT 1 FROM entregas e 
                 WHERE e.id_tarea = t.id AND e.id_alumno = $1
             )
-        `, [idAlumnoReal]);
+        `, [idUsuario]);
 
         res.json({ success: true, pendientes: parseInt(result.rows[0].pendientes) || 0 });
     } catch (err) {
@@ -827,29 +784,18 @@ app.get('/mi-credencial', verificarSesion, (req, res) => {
 
 app.get('/api/datos-credencial', verificarSesion, async (req, res) => {
     try {
+        const idUsuario = req.session.usuarioId;
         const username = req.session.username;
         const emailSesion = req.session.email;
 
-        // Búsqueda robusta basada estrictamente en el correo electrónico y nombre de usuario
         let queryText = `
-            SELECT id, nombre, apellido, grupo, tutor, telefono1, telefono2 
-            FROM alumnos 
-            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
+            SELECT a.id, a.nombre, a.apellido, a.grupo, a.tutor, a.telefono1, a.telefono2 
+            FROM alumnos a 
+            LEFT JOIN usuarios u ON a.id = u.id OR LOWER(a.email) = LOWER(u.email)
+            WHERE u.id = $1 OR u.username = $2 OR LOWER(a.email) = LOWER($3)
             LIMIT 1
         `;
-        let result = await pool.query(queryText, [emailSesion || '', `%${username || ''}%`]);
-
-        if (result.rows.length === 0) {
-            // Respaldo secundario si el correo no coincide exactamente
-            let queryFallback = `
-                SELECT a.id, a.nombre, a.apellido, a.grupo, a.tutor, a.telefono1, a.telefono2 
-                FROM alumnos a 
-                INNER JOIN usuarios u ON LOWER(u.email) = LOWER(a.email)
-                WHERE u.username = $1
-                LIMIT 1
-            `;
-            result = await pool.query(queryFallback, [username || '']);
-        }
+        let result = await pool.query(queryText, [idUsuario || 0, username || '', emailSesion || '']);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Alumno no encontrado para esta sesión.' });
@@ -1041,6 +987,7 @@ app.get('/api/reportes-avanzados-pdf', verificarAdmin, async (req, res) => {
 
 app.post('/api/chatbot-escolar', verificarSesion, async (req, res) => {
     const { mensaje } = req.body;
+    const idUsuario = req.session.usuarioId;
     const username = req.session.username;
     const emailSesion = req.session.email;
     
@@ -1052,12 +999,13 @@ app.post('/api/chatbot-escolar', verificarSesion, async (req, res) => {
 
     try {
         let queryText = `
-            SELECT id, nombre, apellido, grupo 
-            FROM alumnos 
-            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
+            SELECT a.id, a.nombre, a.apellido, a.grupo 
+            FROM alumnos a 
+            LEFT JOIN usuarios u ON a.id = u.id OR LOWER(a.email) = LOWER(u.email)
+            WHERE u.id = $1 OR u.username = $2 OR LOWER(a.email) = LOWER($3)
             LIMIT 1
         `;
-        let result = await pool.query(queryText, [emailSesion || '', `%${username || ''}%`]);
+        let result = await pool.query(queryText, [idUsuario || 0, username || '', emailSesion || '']);
 
         if (result.rows.length === 0) {
             return res.json({ success: true, respuesta: "No encontré un expediente de alumno asociado a tu sesión." });
@@ -1077,8 +1025,8 @@ app.post('/api/chatbot-escolar', verificarSesion, async (req, res) => {
                     respuestaBot += `• ${n.materia}: <strong>${n.calificacion || '0.00'}</strong><br>`;
                     suma += parseFloat(n.calificacion || 0);
                 });
-                const promedioGlobal = (suma / resNotas.rows.length).toFixed(2);
-                respuestaBot += `<br>📈 **Promedio General:** <strong>${promedioGlobal}</strong>`;
+                const promedioGeneral = (suma / resNotas.rows.length).toFixed(2);
+                respuestaBot += `<br>📈 **Promedio General:** <strong>${promedioGeneral}</strong>`;
             }
         } 
         else if (texto.includes('asistencia') || texto.includes('falta') || texto.includes('retardo')) {
@@ -3240,15 +3188,18 @@ app.get('/mis-calificaciones', verificarSesion, (req, res) => {
 
 app.get(['/api/mis-notas', '/api/mis-calificaciones-datos', '/api/mis-calificaciones'], verificarSesion, async (req, res) => {
     try {
+        const idUsuario = req.session.usuarioId;
         const username = req.session.username;
         const emailSesion = req.session.email;
 
+        // Búsqueda estricta vinculada exclusivamente al usuario autenticado actual
         let alumnoRes = await pool.query(`
-            SELECT id, nombre, apellido, grupo 
-            FROM alumnos 
-            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
+            SELECT a.id, a.nombre, a.apellido, a.grupo 
+            FROM alumnos a 
+            LEFT JOIN usuarios u ON a.id = u.id OR LOWER(u.email) = LOWER(a.email)
+            WHERE u.id = $1 OR u.username = $2 OR LOWER(a.email) = LOWER($3)
             LIMIT 1
-        `, [emailSesion || '', `%${username || ''}%`]);
+        `, [idUsuario || 0, username || '', emailSesion || '']);
 
         let calificacionesRows = [];
         let nombreCompletoAlumno = req.session.nombre || username || "Alumno";
@@ -3308,6 +3259,4 @@ app.get('/logout', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
-});
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Sistema escolar corriendo en http://localhost:${PORT}`));
