@@ -68,15 +68,28 @@ const pool = new Pool({
     }
 });
 
-// Prueba la conexión sin crashear el servidor si falla al inicio
-pool.connect((err, client, release) => {
-    if (err) {
-        console.error('Error al conectar a la BD (pero el servidor seguirá vivo):', err.stack);
-    } else {
-        console.log('¡Conexión exitosa a PostgreSQL en la nube!');
-        release();
+const { Pool } = require('pg');
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
     }
 });
+// Configuración limpia usando DATABASE_URL de Railway
+const { Pool } = require('pg');
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
+
+// Esto nos imprimirá el error exacto en rojo para saber qué le duele si falla
+pool.connect()
+    .then(() => console.log('¡Conectado a PostgreSQL con éxito!'))
+    .catch(err => console.error('ERROR DETALLADO DE CONEXIÓN:', err));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
