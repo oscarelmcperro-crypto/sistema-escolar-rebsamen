@@ -60,11 +60,7 @@ const transportador = nodemailer.createTransport({
 
 // Configuración del Pool Conector de PostgreSQL
 const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'asistencias_y_concentrado_de_calificaciones',
-    password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT) || 5432,
+    connectionString: process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT || 5432}/${process.env.DB_NAME}`,
     ssl: {
         rejectUnauthorized: false
     }
