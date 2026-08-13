@@ -65,6 +65,9 @@ const pool = new Pool({
     database: process.env.DB_NAME || 'asistencias_y_concentrado_de_calificaciones',
     password: process.env.DB_PASSWORD,
     port: parseInt(process.env.DB_PORT) || 5432,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Inicialización Segura: Asegurar cuenta Administrador Maestra al arrancar
