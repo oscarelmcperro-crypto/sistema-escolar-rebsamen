@@ -79,6 +79,9 @@ const pool = new Pool({
 // Configuración limpia usando DATABASE_URL de Railway
 const { Pool } = require('pg');
 
+const { Pool } = require('pg');
+
+// Configuración limpia conectando directo al DATABASE_URL de Railway
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -86,10 +89,8 @@ const pool = new Pool({
     }
 });
 
-// Esto nos imprimirá el error exacto en rojo para saber qué le duele si falla
-pool.connect()
-    .then(() => console.log('¡Conectado a PostgreSQL con éxito!'))
-    .catch(err => console.error('ERROR DETALLADO DE CONEXIÓN:', err.message || err));
+// Exportamos el pool por si lo usas en otras rutas
+module.exports = pool;
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
