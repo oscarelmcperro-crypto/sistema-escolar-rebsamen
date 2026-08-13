@@ -58,13 +58,12 @@ const transportador = nodemailer.createTransport({
     }
 });
 
-// Configuración del Pool Conector de PostgreSQL
+// Configuración del Pool Conector de PostgreSQL para Railway
 const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'asistencias_y_concentrado_de_calificaciones',
-    password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT) || 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Inicialización Segura: Asegurar cuenta Administrador Maestra al arrancar
@@ -187,7 +186,6 @@ function verificarAdmin(req, res, next) {
     if (req.session && req.session.usuarioLogueado) {
         const rol = (req.session.rol || '').toLowerCase().trim();
         
-        // Excluir docentes/profesores/maestros para no permitirles acciones administrativas
         const esDocente = rol.includes('docente') || rol.includes('profesor') || rol.includes('maestro');
         const esAdmin = (rol.includes('admin') || rol.includes('director') || rol === 'administrador') && !esDocente;
 
@@ -235,7 +233,6 @@ function verificarAlumno(req, res, next) {
 //          ENDPOINTS AUXILIARES (API)
 // ==========================================
 
-// Rutas de Calendario Académico (Ajustado usando id_evento)
 app.get('/api/calendario', async (req, res) => {
     const { mes, anio } = req.query;
     try {
@@ -387,7 +384,8 @@ app.post('/guardar-tarea', verificarSesion, upload.single('archivo_adjunto'), as
 
 app.post('/subir-entrega', verificarSesion, upload.single('archivo_alumno'), async (req, res) => {
     const { id_tarea, comentario } = req.body;
-    const idAlumno = req.session.usuarioId;
+    const username = req.session.username;
+    const emailSesion = req.session.email;
     const archivoAlumno = req.file ? req.file.filename : null;
 
     if (!archivoAlumno) {
@@ -395,10 +393,22 @@ app.post('/subir-entrega', verificarSesion, upload.single('archivo_alumno'), asy
     }
 
     try {
+        const resAlumno = await pool.query(`
+            SELECT id FROM alumnos 
+            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
+            LIMIT 1
+        `, [emailSesion || '', `%${username || ''}%`]);
+
+        if (resAlumno.rows.length === 0) {
+            return res.status(400).send("No se encontró un expediente de alumno asociado para realizar la entrega.");
+        }
+
+        const idAlumnoReal = resAlumno.rows[0].id;
+
         await pool.query(
             `INSERT INTO entregas (id_tarea, id_alumno, archivo_alumno, comentario)
              VALUES ($1, $2, $3, $4)`,
-            [id_tarea, idAlumno, archivoAlumno, comentario]
+            [id_tarea, idAlumnoReal, archivoAlumno, comentario]
         );
 
         res.send(generarPantallaExito({
@@ -415,8 +425,17 @@ app.post('/subir-entrega', verificarSesion, upload.single('archivo_alumno'), asy
 
 app.get('/api/lista-tareas', verificarSesion, async (req, res) => {
     try {
-        const idUsuario = req.session.usuarioId;
+        const username = req.session.username;
+        const emailSesion = req.session.email;
         const rol = req.session.rol || 'alumno';
+
+        const alumnoRes = await pool.query(`
+            SELECT id FROM alumnos 
+            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
+            LIMIT 1
+        `, [emailSesion || '', `%${username || ''}%`]);
+
+        const idAlumnoReal = alumnoRes.rows.length > 0 ? alumnoRes.rows[0].id : 0;
 
         const result = await pool.query(`
             SELECT t.*, 
@@ -425,7 +444,7 @@ app.get('/api/lista-tareas', verificarSesion, async (req, res) => {
                    (SELECT COUNT(*) FROM entregas e WHERE e.id_tarea = t.id) as total_entregas
             FROM tareas t 
             ORDER BY t.id DESC
-        `, [idUsuario]);
+        `, [idAlumnoReal]);
 
         res.json({ success: true, tareas: result.rows, rol: rol });
     } catch (err) {
@@ -436,7 +455,16 @@ app.get('/api/lista-tareas', verificarSesion, async (req, res) => {
 
 app.get('/api/tareas-pendientes-count', verificarSesion, async (req, res) => {
     try {
-        const idUsuario = req.session.usuarioId;
+        const username = req.session.username;
+        const emailSesion = req.session.email;
+
+        const alumnoRes = await pool.query(`
+            SELECT id FROM alumnos 
+            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
+            LIMIT 1
+        `, [emailSesion || '', `%${username || ''}%`]);
+
+        const idAlumnoReal = alumnoRes.rows.length > 0 ? alumnoRes.rows[0].id : 0;
 
         const result = await pool.query(`
             SELECT COUNT(*) as pendientes 
@@ -445,7 +473,7 @@ app.get('/api/tareas-pendientes-count', verificarSesion, async (req, res) => {
                 SELECT 1 FROM entregas e 
                 WHERE e.id_tarea = t.id AND e.id_alumno = $1
             )
-        `, [idUsuario]);
+        `, [idAlumnoReal]);
 
         res.json({ success: true, pendientes: parseInt(result.rows[0].pendientes) || 0 });
     } catch (err) {
@@ -543,7 +571,6 @@ app.get('/api/dashboard-stats', verificarSesion, async (req, res) => {
     }
 });
 
-// Endpoint para alertas con el ID del alumno (para hacerlo clickeable)
 app.get('/api/alertas-riesgo', verificarSesion, async (req, res) => {
     try {
         const query = `
@@ -573,7 +600,6 @@ app.get('/api/alertas-riesgo', verificarSesion, async (req, res) => {
     }
 });
 
-// Endpoint para Exportar Resumen del Dashboard a PDF
 app.get('/api/dashboard-exportar-pdf', verificarSesion, async (req, res) => {
     try {
         const totalAlumnosRes = await pool.query('SELECT COUNT(*) FROM alumnos');
@@ -661,7 +687,6 @@ app.get('/api/consultar-alumno/:id', async (req, res) => {
 // 🏥 MÓDULO DE JUSTIFICANTES MÉDICOS (PADRES)
 // ==========================================
 
-// Endpoint para que los padres suban el justificante
 app.post('/subir-justificante', upload.single('archivo_justificante'), async (req, res) => {
     const { id_alumno, fecha_falta, motivo } = req.body;
     const archivo = req.file ? req.file.filename : null;
@@ -687,7 +712,6 @@ app.post('/subir-justificante', upload.single('archivo_justificante'), async (re
     }
 });
 
-// Endpoint exclusivo para que el Director/Admin vea los justificantes pendientes
 app.get('/revisar-justificantes', verificarAdmin, async (req, res) => {
     try {
         const queryText = `
@@ -745,20 +769,16 @@ app.get('/revisar-justificantes', verificarAdmin, async (req, res) => {
     }
 });
 
-// Endpoint para que el director apruebe el justificante y borre la falta
 app.get('/aprobar-justificante/:id', verificarAdmin, async (req, res) => {
     try {
         const idJustificante = req.params.id;
         
-        // Obtenemos los datos del justificante
         const justRes = await pool.query('SELECT * FROM justificantes WHERE id = $1', [idJustificante]);
         if(justRes.rows.length === 0) return res.send('No existe.');
         const just = justRes.rows[0];
 
-        // Actualizamos estado a Aprobado
         await pool.query("UPDATE justificantes SET estado = 'Aprobado' WHERE id = $1", [idJustificante]);
 
-        // Buscamos si hay una falta registrada en esa fecha y la pasamos a "Falta Justificada"
         await pool.query(
             "UPDATE asistencias SET estado = 'Falta Justificada' WHERE id_alumno = $1 AND fecha = $2 AND estado = 'Falta'",
             [just.id_alumno, just.fecha_falta]
@@ -784,18 +804,27 @@ app.get('/mi-credencial', verificarSesion, (req, res) => {
 
 app.get('/api/datos-credencial', verificarSesion, async (req, res) => {
     try {
-        const idUsuario = req.session.usuarioId;
         const username = req.session.username;
         const emailSesion = req.session.email;
 
         let queryText = `
-            SELECT a.id, a.nombre, a.apellido, a.grupo, a.tutor, a.telefono1, a.telefono2 
-            FROM alumnos a 
-            LEFT JOIN usuarios u ON a.id = u.id OR LOWER(a.email) = LOWER(u.email)
-            WHERE u.id = $1 OR u.username = $2 OR LOWER(a.email) = LOWER($3)
+            SELECT id, nombre, apellido, grupo, tutor, telefono1, telefono2 
+            FROM alumnos 
+            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
             LIMIT 1
         `;
-        let result = await pool.query(queryText, [idUsuario || 0, username || '', emailSesion || '']);
+        let result = await pool.query(queryText, [emailSesion || '', `%${username || ''}%`]);
+
+        if (result.rows.length === 0) {
+            let queryFallback = `
+                SELECT a.id, a.nombre, a.apellido, a.grupo, a.tutor, a.telefono1, a.telefono2 
+                FROM alumnos a 
+                INNER JOIN usuarios u ON LOWER(u.email) = LOWER(a.email)
+                WHERE u.username = $1
+                LIMIT 1
+            `;
+            result = await pool.query(queryFallback, [username || '']);
+        }
 
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Alumno no encontrado para esta sesión.' });
@@ -859,7 +888,6 @@ app.get('/api/reporte-avanzado-datos', verificarAdmin, async (req, res) => {
     }
 });
 
-// 📥 EXPORTAR REPORTE AVANZADO A EXCEL
 app.get('/api/reportes-avanzados-excel', verificarAdmin, async (req, res) => {
     const { grupo } = req.query;
     try {
@@ -923,7 +951,6 @@ app.get('/api/reportes-avanzados-excel', verificarAdmin, async (req, res) => {
     }
 });
 
-// 📄 EXPORTAR REPORTE AVANZADO A PDF
 app.get('/api/reportes-avanzados-pdf', verificarAdmin, async (req, res) => {
     const { grupo } = req.query;
     try {
@@ -987,7 +1014,6 @@ app.get('/api/reportes-avanzados-pdf', verificarAdmin, async (req, res) => {
 
 app.post('/api/chatbot-escolar', verificarSesion, async (req, res) => {
     const { mensaje } = req.body;
-    const idUsuario = req.session.usuarioId;
     const username = req.session.username;
     const emailSesion = req.session.email;
     
@@ -999,13 +1025,12 @@ app.post('/api/chatbot-escolar', verificarSesion, async (req, res) => {
 
     try {
         let queryText = `
-            SELECT a.id, a.nombre, a.apellido, a.grupo 
-            FROM alumnos a 
-            LEFT JOIN usuarios u ON a.id = u.id OR LOWER(a.email) = LOWER(u.email)
-            WHERE u.id = $1 OR u.username = $2 OR LOWER(a.email) = LOWER($3)
+            SELECT id, nombre, apellido, grupo 
+            FROM alumnos 
+            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
             LIMIT 1
         `;
-        let result = await pool.query(queryText, [idUsuario || 0, username || '', emailSesion || '']);
+        let result = await pool.query(queryText, [emailSesion || '', `%${username || ''}%`]);
 
         if (result.rows.length === 0) {
             return res.json({ success: true, respuesta: "No encontré un expediente de alumno asociado a tu sesión." });
@@ -1025,8 +1050,8 @@ app.post('/api/chatbot-escolar', verificarSesion, async (req, res) => {
                     respuestaBot += `• ${n.materia}: <strong>${n.calificacion || '0.00'}</strong><br>`;
                     suma += parseFloat(n.calificacion || 0);
                 });
-                const promedioGeneral = (suma / resNotas.rows.length).toFixed(2);
-                respuestaBot += `<br>📈 **Promedio General:** <strong>${promedioGeneral}</strong>`;
+                const promedioGlobal = (suma / resNotas.rows.length).toFixed(2);
+                respuestaBot += `<br>📈 **Promedio General:** <strong>${promedioGlobal}</strong>`;
             }
         } 
         else if (texto.includes('asistencia') || texto.includes('falta') || texto.includes('retardo')) {
@@ -1160,7 +1185,6 @@ app.get('/menu', verificarSesion, (req, res) => {
     res.sendFile(path.join(__dirname, 'public/menu.html'));
 });
 
-// Ruta para la vista visual del Calendario Académico
 app.get('/calendario', verificarSesion, (req, res) => {
     res.sendFile(path.join(__dirname, 'public/calendario.html'));
 });
@@ -1287,7 +1311,6 @@ const guardarAlumnoHandler = async (req, res) => {
     try {
         await clienteBD.query('BEGIN');
 
-        // 1. Insertar el alumno dejando que la secuencia automática asigne el ID
         const queryAlumno = `
             INSERT INTO alumnos (nombre, apellido, email, grupo, tutor, telefono1, telefono2) 
             VALUES ($1, $2, $3, $4, $5, $6, $7) 
@@ -1303,7 +1326,6 @@ const guardarAlumnoHandler = async (req, res) => {
         const passwordTemporal = 'alumno1234'; 
         const hashPassword = await bcrypt.hash(passwordTemporal, saltRounds);
         
-        // 2. Insertar el usuario con su propia secuencia automática sin chocar con el ID de alumnos
         const queryUsuario = `
             INSERT INTO usuarios (username, password, id_rol, nombre, apellido, email, cambiar_password) 
             VALUES ($1, $2, $3, $4, $5, $6, TRUE)
@@ -1913,7 +1935,6 @@ app.get('/reporte-alumno/:id', verificarSesion, async (req, res) => {
     } catch (err) { res.status(500).send('Error al cargar reporte.'); }
 });
 
-// GENERACIÓN PDF BOLETA EN SERVIDOR
 app.get('/descargar-boleta-pdf/:id', verificarSesion, async (req, res) => {
     try {
         const idAlumno = req.params.id;
@@ -2014,10 +2035,6 @@ app.get('/descargar-credencial-pdf/:id', verificarSesion, async (req, res) => {
         res.status(500).send('Error interno generando la credencial.');
     }
 });
-
-// ==========================================
-// 📇 GENERADOR MASIVO DE CREDENCIALES QR POR GRUPO (PDF)
-// ==========================================
 
 app.get('/descargar-credenciales-grupo-pdf/:grupo', verificarSesion, async (req, res) => {
     try {
@@ -2614,7 +2631,7 @@ app.get('/descargar-asistencias-pdf', verificarSesion, async (req, res) => {
 
 app.get('/descargar-asistencias-excel', verificarSesion, async (req, res) => {
     try {
-        const queryText = `SELECT a.fecha, al.grupo, al.apellido, al.nombre, al.estado FROM asistencias a INNER JOIN alumnos al ON a.id_alumno = al.id ORDER BY a.fecha DESC`;
+        const queryText = `SELECT a.fecha, al.grupo, al.apellido, al.nombre, a.estado FROM asistencias a INNER JOIN alumnos al ON a.id_alumno = al.id ORDER BY a.fecha DESC`;
         const result = await pool.query(queryText);
         const libro = new ExcelJS.Workbook();
         const hoja = libro.addWorksheet('Asistencias');
@@ -2672,7 +2689,6 @@ app.post('/guardar-calificacion', verificarSesion, async (req, res) => {
             await pool.query(insertQuery, [id_alumno, materia, p1, p2, p3, promedioFinal]);
         }
         
-        // 📧 FASE 2: Enviar notificación automática de calificaciones por correo
         try {
             const resAlumnoEmail = await pool.query('SELECT nombre, apellido, email FROM alumnos WHERE id = $1', [id_alumno]);
             if (resAlumnoEmail.rows.length > 0 && resAlumnoEmail.rows[0].email) {
@@ -2772,7 +2788,6 @@ app.post('/api/guardar-calificaciones-masivo', verificarSesion, async (req, res)
                 `, [id_alumno, materia, p1, p2, p3, promedioFinal]);
             }
 
-            // 📧 Notificación automática por correo en el guardado masivo
             try {
                 const resAlumnoEmail = await clienteBD.query('SELECT nombre, apellido, email FROM alumnos WHERE id = $1', [id_alumno]);
                 if (resAlumnoEmail.rows.length > 0 && resAlumnoEmail.rows[0].email) {
@@ -2823,7 +2838,6 @@ app.post('/api/guardar-calificaciones-masivo', verificarSesion, async (req, res)
     }
 });
 
-// VISTA CONCENTRADO DE CALIFICACIONES (CON BOTONES EXCEL Y PDF)
 app.get('/ver-calificaciones', verificarSesion, async (req, res) => {
     try {
         const queryText = `
@@ -2972,7 +2986,6 @@ app.get('/ver-calificaciones', verificarSesion, async (req, res) => {
     }
 });
 
-// ENDPOINT EXPORTAR CALIFICACIONES A EXCEL
 app.get('/descargar-calificaciones-excel', verificarSesion, async (req, res) => {
     try {
         const queryText = `
@@ -3020,7 +3033,6 @@ app.get('/descargar-calificaciones-excel', verificarSesion, async (req, res) => 
     }
 });
 
-// ENDPOINT EXPORTAR CALIFICACIONES A PDF
 app.get('/descargar-calificaciones-pdf', verificarSesion, async (req, res) => {
     try {
         const queryText = `
@@ -3037,7 +3049,6 @@ app.get('/descargar-calificaciones-pdf', verificarSesion, async (req, res) => {
 
         doc.pipe(res);
 
-        // Membrete
         doc.fillColor('#1e3a8a').fontSize(16).text('Escuela Secundaria Oficial No. 0829', { align: 'center' });
         doc.fillColor('#334155').fontSize(12).text('"Enrique C. Rébsamen"', { align: 'center' });
         doc.fontSize(10).text('Concentrado Oficial de Calificaciones por Parcial', { align: 'center' });
@@ -3188,18 +3199,15 @@ app.get('/mis-calificaciones', verificarSesion, (req, res) => {
 
 app.get(['/api/mis-notas', '/api/mis-calificaciones-datos', '/api/mis-calificaciones'], verificarSesion, async (req, res) => {
     try {
-        const idUsuario = req.session.usuarioId;
         const username = req.session.username;
         const emailSesion = req.session.email;
 
-        // Búsqueda estricta vinculada exclusivamente al usuario autenticado actual
         let alumnoRes = await pool.query(`
-            SELECT a.id, a.nombre, a.apellido, a.grupo 
-            FROM alumnos a 
-            LEFT JOIN usuarios u ON a.id = u.id OR LOWER(u.email) = LOWER(a.email)
-            WHERE u.id = $1 OR u.username = $2 OR LOWER(a.email) = LOWER($3)
+            SELECT id, nombre, apellido, grupo 
+            FROM alumnos 
+            WHERE LOWER(email) = LOWER($1) OR LOWER(email) LIKE LOWER($2)
             LIMIT 1
-        `, [idUsuario || 0, username || '', emailSesion || '']);
+        `, [emailSesion || '', `%${username || ''}%`]);
 
         let calificacionesRows = [];
         let nombreCompletoAlumno = req.session.nombre || username || "Alumno";
@@ -3243,7 +3251,6 @@ app.post('/enviar-codigo', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM usuarios WHERE username = $1 AND email = $2', [username, email]);
         if (result.rows.length === 0) return res.status(404).send('Usuario no encontrado');
-        // ...resto del código de recuperación
     } catch(e) { res.status(500).send('Error'); }
 });
 
@@ -3259,4 +3266,6 @@ app.get('/logout', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Sistema escolar corriendo en http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
+});
