@@ -60,7 +60,6 @@ const transportador = nodemailer.createTransport({
 
 const { Pool } = require('pg');
 
-// Configuración limpia usando DATABASE_URL de Railway
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -68,30 +67,7 @@ const pool = new Pool({
     }
 });
 
-const { Pool } = require('pg');
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
-});
-// Configuración limpia usando DATABASE_URL de Railway
-const { Pool } = require('pg');
-
-const { Pool } = require('pg');
-
-// Configuración limpia conectando directo al DATABASE_URL de Railway
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
-});
-
-// Exportamos el pool por si lo usas en otras rutas
-module.exports = pool;
-
+// ¡Solo levantamos el servidor directamente para que Railway no apague la app!
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
