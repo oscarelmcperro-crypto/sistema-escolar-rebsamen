@@ -66,7 +66,10 @@ const pool = new Pool({
     }
 });
 
-// Inicialización Segura: Asegurar cuenta Administrador Maestra al arrancar
+// ==========================================
+// INICIALIZACIÓN COMENTADA PARA EVITAR ERRORES DE ARRANQUE
+// ==========================================
+/*
 (async () => {
     try {
         console.log('🔄 Conectando a PostgreSQL...');
@@ -91,6 +94,7 @@ const pool = new Pool({
         console.error('⚠️ Error al inicializar el usuario administrador:', err.message);
     }
 })();
+*/
 
 // ==========================================
 //   🎨 PLANTILLA INTERACTIVA DE ÉXITO (GLOBAL)
@@ -2631,7 +2635,7 @@ app.get('/descargar-asistencias-pdf', verificarSesion, async (req, res) => {
 
 app.get('/descargar-asistencias-excel', verificarSesion, async (req, res) => {
     try {
-        const queryText = `SELECT a.fecha, al.grupo, al.apellido, al.nombre, a.estado FROM asistencias a INNER JOIN alumnos al ON a.id_alumno = al.id ORDER BY a.fecha DESC`;
+        const queryText = `SELECT a.fecha, al.grupo, al.apellido, al.nombre, al.estado FROM asistencias a INNER JOIN alumnos al ON a.id_alumno = al.id ORDER BY a.fecha DESC`;
         const result = await pool.query(queryText);
         const libro = new ExcelJS.Workbook();
         const hoja = libro.addWorksheet('Asistencias');
@@ -3267,5 +3271,5 @@ app.get('/logout', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
