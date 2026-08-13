@@ -58,8 +58,12 @@ const transportador = nodemailer.createTransport({
     }
 });
 
+const express = require('express');
 const { Pool } = require('pg');
 
+const app = express();
+
+// Configuración del Pool de PostgreSQL con la URL de Railway
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -67,7 +71,9 @@ const pool = new Pool({
     }
 });
 
-// ¡Solo levantamos el servidor directamente para que Railway no apague la app!
+// Middleware y rutas de tu aplicación van aquí...
+
+// Arranque directo del servidor web para evitar el error 502
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
