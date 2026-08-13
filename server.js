@@ -89,7 +89,7 @@ const pool = new Pool({
 // Esto nos imprimirá el error exacto en rojo para saber qué le duele si falla
 pool.connect()
     .then(() => console.log('¡Conectado a PostgreSQL con éxito!'))
-    .catch(err => console.error('ERROR DETALLADO DE CONEXIÓN:', err));
+    .catch(err => console.error('ERROR DETALLADO DE CONEXIÓN:', err.message || err));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
