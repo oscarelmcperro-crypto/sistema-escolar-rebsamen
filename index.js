@@ -1,12 +1,17 @@
 const { Client } = require('pg');
 
-// Configuración de conexión (ajusta si es necesario)
+// Configuración de conexión compatible con Railway y entorno local
 const client = new Client({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'asistencias_y_concentrado_de_calificaciones',
-  password: 'ROROGIOSMO5',
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  // Respaldo local por si ejecutas el script de prueba en tu PC
+  ...(!process.env.DATABASE_URL && {
+    user: 'postgres',
+    host: 'localhost',
+    database: 'asistencias_y_concentrado_de_calificaciones',
+    password: 'ROROGIOSMO5',
+    port: 5432,
+  })
 });
 
 async function conectar() {
