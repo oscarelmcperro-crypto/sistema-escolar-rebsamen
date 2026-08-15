@@ -3264,7 +3264,7 @@ app.post('/enviar-codigo', async (req, res) => {
 });
 
 // ==========================================
-//               CIERRE DE SESIÓN
+//              CIERRE DE SESIÓN
 // ==========================================
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -3278,4 +3278,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
-*/sera/*
